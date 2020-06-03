@@ -7,11 +7,7 @@ def get_stopwords():
         stopwords = []
 
         f = open('files/stop_words.txt', 'r')
-        # txt = f.read()
-        # txt2 = txt.split('\r')
         word = 'not none'
-        # for word in txt2:
-        #     stopwords.append(word)
         while word is not None and word != '':
             word = f.readline()
             word = word[:-1]
