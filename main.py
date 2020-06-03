@@ -1,5 +1,5 @@
-from tokenization import get_stopwords, get_character_stopwords, simple_tokenize
-from text import html_filter, stop_word_filter
+from nlp.tokenization import get_stopwords, get_character_stopwords, simple_tokenize
+from nlp.text import html_filter, stop_word_filter
 import sys
 import csv
 
