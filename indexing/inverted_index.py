@@ -16,7 +16,11 @@ class Posting:
     def append_posting(self, posting):
         p = self
         while p.next is not None:
+            if p.doc_id == posting.doc_id:
+                return
             p = p.next
+        if p.doc_id == posting.doc_id:
+            return
         p.next = posting
         # if self.next is None:
         #     self.next = posting
