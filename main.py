@@ -1,26 +1,26 @@
-from nlp.tokenization import get_stopwords, get_character_stopwords, simple_tokenize
-from nlp.text import html_filter, stop_word_filter
-import sys
-import csv
+from indexing.inverted_index import InvertedIndex
+from util.file import fetch_docs_from_file
 
-csv.field_size_limit(sys.maxsize)
+invertedIndex = InvertedIndex(mode=1)
 
-with open('dataset/ir-news-0-2.csv', newline='') as f:
-    reader = csv.reader(f)
-    data = list(reader)
+doc_paths = ['dataset/ir-news-0-2.csv', 'dataset/ir-news-2-4.csv',
+             'dataset/ir-news-4-6.csv', 'dataset/ir-news-6-8.csv',
+             'dataset/ir-news-8-10.csv', 'dataset/ir-news-10-12.csv']
 
-# print(data[0])
-# print(data[200][5]) #1,3,5,6
-print(data[200][6])
-print()
-tokens = simple_tokenize(str(stop_word_filter(html_filter(data[200][6]), get_character_stopwords())), ' ')
+for doc_path in doc_paths:
+    docs = fetch_docs_from_file(doc_path)
+    i = 0
+    for doc in docs:
+        i += 1
+        if i % 50 == 0:
+            print(doc_path,i, '/', str((len(docs) - 1)))
+        invertedIndex.add_document(doc)
 
-print(tokens)
-print(len(tokens))
-print()
-tokens = stop_word_filter(tokens, get_stopwords())
-print(tokens)
-print(len(tokens))
-
-# print(len(data))
-# print(get_stopwords())
+x = 'hh'
+while x != 'exit':
+    x = input('>')
+    result = invertedIndex.search(x)
+    i = 1
+    for doc in result:
+        print(str(i) + '.' + doc[1] + '\n' + doc[6])
+        i += 1

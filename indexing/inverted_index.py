@@ -44,6 +44,7 @@ class Term:
 
 class InvertedIndex:
     def __init__(self, mode):
+
         self.postings_lists = {}
         self.docs = []
         self.mode = mode
