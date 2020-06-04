@@ -7,10 +7,15 @@ class Posting:
         self.next = None
 
     def append_posting(self, posting):
-        if self.next is None:
-            self.next = posting
-        else:
-            self.next.append_posting(posting)
+        p = self
+        while p.next is not None:
+            p = p.next
+        p.next = posting
+        # if self.next is None:
+        #     self.next = posting
+        # else:
+        #     try:
+        #         self.next.append_posting(posting)
 
     def sorted_append_posting(self, posting):
         if self.doc_id <= posting.doc_id:
@@ -66,3 +71,19 @@ class InvertedIndex:
 
         for token in tokens:
             self.add_term(token, doc_id)
+
+    def search(self, word):
+        term = self.postings_lists.get(word, None)
+
+        if term is None:
+            return []
+
+        result_docs = []
+
+        posting = term.next_posting
+
+        while posting is not None:
+            result_docs.append(self.docs[posting.doc_id])
+            posting = posting.next
+
+        return result_docs
