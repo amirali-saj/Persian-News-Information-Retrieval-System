@@ -25,8 +25,7 @@ class Posting:
 
 
 class Term:
-    def __init__(self, word, frequency):
-        self.word = word
+    def __init__(self, frequency):
         self.frequency = frequency
         self.next_posting = None
 
@@ -54,7 +53,7 @@ class InvertedIndex:
     def add_term(self, word, doc_id):
         term = self.postings_lists.get(word, None)
         if term is None:
-            self.postings_lists[word] = Term(word, 1)
+            self.postings_lists[word] = Term(1)
             self.postings_lists[word].add_posting(doc_id)
             return
         term.frequency += 1
