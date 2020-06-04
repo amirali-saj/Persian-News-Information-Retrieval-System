@@ -1,5 +1,6 @@
 from nlp.doc import extract_words_from_document
 from uuid import uuid4
+from util.file import add_posting_list_from_file
 
 
 def generate_random_id():
@@ -55,10 +56,15 @@ class InvertedIndex:
         self.mode = mode
 
     def get_word(self, word):
-        word_id = self.postings_lists.get(word, None)
+        word_id = self.dictionary.get(word, None)
         if word_id is None:
             return None
-        return self.postings_lists[word_id]
+        posting_list = self.postings_lists.get(word_id, None)
+        if posting_list is not None:
+            return posting_list
+        else:  # Read from file otherwise
+            add_posting_list_from_file(word_id, self)
+        return self.postings_lists.get(word_id, None)
 
     # def add_posting(self, word, doc_id):
     #     term = self.get_word(word)
@@ -96,7 +102,7 @@ class InvertedIndex:
             self.add_term(token, doc_id)
 
     def search(self, word):
-        term = self.postings_lists.get(word, None)
+        term = self.get_word(word)
 
         if term is None:
             return []
