@@ -18,6 +18,15 @@ def get_character_stopwords():
     return character_stopwords
 
 
+def get_character_numeral_stopwords():
+    global character_stopwords
+    if character_stopwords is None:
+        character_stopwords = fetch_stop_words('files/character_and_number_stop_words.txt')
+        character_stopwords.append('\n')
+        character_stopwords.append('\r')
+    return character_stopwords
+
+
 def fetch_stop_words(path):
     words = []
     f = open(path, 'r')
