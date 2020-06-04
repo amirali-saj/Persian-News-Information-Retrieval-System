@@ -16,26 +16,6 @@ def extract_words_from_text(text, mode):
 
 
 def extract_words_from_document(doc, mode=1):
-    title = doc[1]
-    summary_text = doc[3]
-    meta_tags = doc[5]
     content_text = doc[6]
-
-    tokens = extract_words_from_text(title, mode)
-    summary_tokens = extract_words_from_text(summary_text, mode)
-
-    # meta_tags_tokens = []
-
-    meta_tags_tokens = meta_tags  # Here I used meta tags as distinct Terms as well as using their processed text
-
-    for tag in meta_tags:
-        tag_tokens = extract_words_from_text(tag, mode)
-        append_lists(meta_tags_tokens, tag_tokens)
-
-    content_tokens = extract_words_from_text(content_text, mode)
-
-    tokens = append_lists(tokens, summary_tokens)
-    tokens = append_lists(tokens, meta_tags_tokens)
-    tokens = append_lists(tokens, content_tokens)
-
+    tokens = extract_words_from_text(content_text, mode)
     return tokens
