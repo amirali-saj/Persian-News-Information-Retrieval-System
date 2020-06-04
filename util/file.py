@@ -22,7 +22,7 @@ def fetch_docs_from_file(path):
 
 
 def add_posting_list_from_file(word_id, inverted_index):
-    file_name = find_word_id_file_name(word_id)
+    file_name = find_word_id_file_name(word_id, inverted_index.mode)
     posting_lists = fetch_csv_from_file(file_name)
     for posting_list in posting_lists:
         word_id = posting_list[0]
@@ -33,7 +33,7 @@ def add_posting_list_from_file(word_id, inverted_index):
     return inverted_index
 
 
-def find_word_id_file_name(word_id):
+def find_word_id_file_name(word_id, mode=1):
     index = word_id % 2000
-    name = 'files/postings/postings' + str(index) + '-' + str((index + 2000)) + '.csv'
+    name = 'files/postings/postings{' + str(mode)+'}'+str(index) + '-' + str((index + 2000)) + '.csv'
     return name
