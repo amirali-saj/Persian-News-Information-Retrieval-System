@@ -92,9 +92,7 @@ class InvertedIndex:
     def add_term_by_id(self, word_id, doc_id):
         term = self.postings_lists.get(word_id, None)
         if term is None:
-            print(
-                'Fatal error! dictionary doesn\'t contain the word in the posting file! try loading the dictionary first!')
-            return
+            term = self.postings_lists[word_id] = Term(0)
         term.frequency += 1
         term.add_posting(doc_id)
 
@@ -126,6 +124,7 @@ class InvertedIndex:
         write_dictionary_to_file(self.dictionary, dictionary_path)
         write_postings_lists_to_file(self)
 
-    def load_index_from_file(self, dictionary_path):
+    def load_index_from_file(self, dictionary_path,docs):
+        self.docs = docs
         self.dictionary = read_dictionary_from_file(dictionary_path)
         add_all_posting_lists_from_file(self)
