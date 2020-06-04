@@ -1,4 +1,9 @@
 from nlp.doc import extract_words_from_document
+from uuid import uuid4
+
+
+def generate_random_id():
+    return str(uuid4().hex)
 
 
 class Posting:
@@ -44,23 +49,40 @@ class Term:
 
 class InvertedIndex:
     def __init__(self, mode):
-
-        self.postings_lists = {}
-        self.docs = []
+        self.dictionary = {}  # word -> word_id
+        self.postings_lists = {}  # word_id -> Term
+        self.docs = []  # doc_id (array index) -> doc
         self.mode = mode
 
-    def add_posting(self, word, doc_id):
-        term = self.postings_lists.get(word, None)
-        if term is None:
-            return False
-        term.add_posting(doc_id)
-        return True
+    def get_word(self, word):
+        word_id = self.postings_lists.get(word, None)
+        if word_id is None:
+            return None
+        return self.postings_lists[word_id]
+
+    # def add_posting(self, word, doc_id):
+    #     term = self.get_word(word)
+    #     if term is None:
+    #         return False
+    #     term.add_posting(doc_id)
+    #     return True
 
     def add_term(self, word, doc_id):
-        term = self.postings_lists.get(word, None)
+        term = self.get_word(word)
         if term is None:
-            self.postings_lists[word] = Term(1)
+            word_id = len(self.dictionary)
+            self.dictionary[word] = word_id
+            self.postings_lists[word_id] = Term(1)
             self.postings_lists[word].add_posting(doc_id)
+            return
+        term.frequency += 1
+        term.add_posting(doc_id)
+
+    def add_term_by_id(self, word_id, doc_id):
+        term = self.postings_lists.get(word_id, None)
+        if term is None:
+            print(
+                'Fatal error! dictionary doesn\'t contain the word in the posting file! try loading the dictionary first!')
             return
         term.frequency += 1
         term.add_posting(doc_id)
