@@ -80,7 +80,7 @@ class InvertedIndex:
             word_id = len(self.dictionary)
             self.dictionary[word] = word_id
             self.postings_lists[word_id] = Term(1)
-            self.postings_lists[word].add_posting(doc_id)
+            self.postings_lists[word_id].add_posting(doc_id)
             return
         term.frequency += 1
         term.add_posting(doc_id)
@@ -118,8 +118,9 @@ class InvertedIndex:
 
         return result_docs
 
-    def write_dictionary_to_file(self, path):
-        write_dictionary_to_file(self.dictionary, path)
+    def store_index_to_file(self, dictionary_path):
+        write_dictionary_to_file(self.dictionary, dictionary_path)
+        write_postings_lists_to_file(self)
 
     def load_index_from_file(self, dictionary_path):
         self.dictionary = read_dictionary_from_file(dictionary_path)

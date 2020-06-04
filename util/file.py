@@ -2,7 +2,6 @@ import sys
 import csv
 import re
 import os
-from indexing.inverted_index import InvertedIndex, Term, Posting
 
 
 def read_text_file():
@@ -67,7 +66,7 @@ def write_to_file(path, content):
 def write_postings_lists_to_file(inverted_index):
     csv_string = ''
     for word_id in range(len(inverted_index.dictionary)):
-        term = inverted_index.postings_lists.get(i, None)
+        term = inverted_index.postings_lists.get(word_id, None)
         csv_string += str(word_id)
 
         p = term.next_posting
@@ -78,7 +77,7 @@ def write_postings_lists_to_file(inverted_index):
         csv_string += '\n'
 
         if word_id % 2000 == 1999:
-            write_to_file(find_word_id_file_name(word_id, inverted_index.mode))
+            write_to_file(find_word_id_file_name(word_id, inverted_index.mode), csv_string)
             csv_string = ''
 
 
