@@ -1,5 +1,7 @@
 import sys
 import csv
+import re
+import os
 from indexing.inverted_index import InvertedIndex, Term, Posting
 
 
@@ -19,6 +21,24 @@ def fetch_csv_from_file(path):
 def fetch_docs_from_file(path):
     docs = fetch_csv_from_file(path)
     return docs[1:]
+
+
+def add_all_posting_lists_from_file(inverted_index):
+    pattern = re.compile('^.*{[0-1]}[\.]csv$')
+    files = os.listdir('files/postings')
+    posting_files = []
+    for file_name in files:
+        if re.match(pattern, file_name) is not None:
+            posting_files.append('files/postings' + file_name)
+
+    for file_name in posting_files:
+        posting_lists = fetch_csv_from_file(file_name)
+        for posting_list in posting_lists:
+            word_id = int(posting_list[0])
+            for i in range(len(posting_list)):
+                if i < 1:
+                    continue
+                inverted_index.add_term_by_id(word_id, int(posting_list[i]))
 
 
 def add_posting_list_from_file(word_id, inverted_index):

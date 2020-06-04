@@ -1,6 +1,7 @@
 from nlp.doc import extract_words_from_document
 from uuid import uuid4
-from util.file import add_posting_list_from_file
+from util.file import add_posting_list_from_file, write_dictionary_to_file, write_postings_lists_to_file, \
+    read_dictionary_from_file, add_all_posting_lists_from_file
 
 
 def generate_random_id():
@@ -116,3 +117,10 @@ class InvertedIndex:
             posting = posting.next
 
         return result_docs
+
+    def write_dictionary_to_file(self, path):
+        write_dictionary_to_file(self.dictionary, path)
+
+    def load_index_from_file(self, dictionary_path):
+        self.dictionary = read_dictionary_from_file(dictionary_path)
+        add_all_posting_lists_from_file(self)
