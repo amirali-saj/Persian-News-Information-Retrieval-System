@@ -1,4 +1,6 @@
 import re
+from PersianStemmer import PersianStemmer
+from hazm import Lemmatizer, Stemmer
 
 
 def html_filter(html_content):
@@ -44,17 +46,14 @@ normalization_list_table = [
     (['ﺪ'], 'د'),
     (['ﺮ'], 'ر'),
     (['إ', 'أ', 'آ'], 'ا'),
-    (['َ', '“', 'ّ,', 'ً', '؛', 'ُ', 'ٔ', '؟', ',', 'ِ', '”', '\u200f', '\u200e', '\u200d', '\u202c', '\u200a',
+    (['َ', '“', 'ّ,', 'ً', '؛', 'ٔ', '؟', ',', 'ِ', '”', 'ُ', '\u200f', '\u200e', '\u200d', '\u202c', '\u200a',
       '\u202b'], ''),
     (['\u1680', '\u2005', '\u2006', '\u2009', '\u200A', '\u200B', '\u202F', '\uFEFF'], '\u200c')
 ]
 
 for x in normalization_list_table:
-    print(x[0])
     for char in x[0]:
         normalization_table[char] = x[1]
-        print(char, '\n', x[1])
-        print('\n\n')
 
 
 def normalize(text):
@@ -62,5 +61,58 @@ def normalize(text):
     for c in text:
         replacement = normalization_table.get(c, c)
         new_text += replacement
-    return text
+    return new_text
 
+
+ps = PersianStemmer()
+
+stems = {}
+
+tracked_stems = ['گفت', 'گو', 'رود', 'خواه', 'سپاس', 'هنر', 'شریف', 'دوست', 'یاد', 'توان', 'شنو', 'کرد', 'ساز', 'دان']
+
+lemmatizer = Lemmatizer()
+
+
+def lemmatize(word):
+    result = lemmatizer.lemmatize(word)
+    if '#' in result:
+        parts = result.split('#')
+        if parts[0] in word and parts[0] != '':
+            result = parts[0]
+        else:
+            result = parts[1]
+    return result
+
+
+def stem(word):
+    result = word.replace('\u200c', ' ')
+    result_tokens = result.split(' ')
+
+    word_tokens = []
+    for t in result_tokens:
+        word_tokens.append(lemmatize(t))
+
+    if len(word_tokens) == 1:
+        result = lemmatize(ps.run(word_tokens[0]))
+    elif len(word_tokens) == 2:
+        if word_tokens[0] == 'نم' or word_tokens[0] == 'می':
+            result = lemmatize('می\u200c' + word_tokens[1])
+        elif word_tokens[1] in ['بود', 'باش', 'ام', 'اید', 'است', 'ای', 'ایم', 'اند'] and word_tokens[0].endswith(
+                'ه') and word_tokens[0] != 'خواه':
+            result = lemmatize(word_tokens[0] + '\u200cام')
+        elif word_tokens[0] == 'خواه':
+            result = word_tokens[1]
+    elif len(word_tokens) == 3:
+        if word_tokens[0] == 'نم' or word_tokens[0] == 'می' and word_tokens[1].endswith('ه'):
+            result = lemmatize(word_tokens[1] + '\u200cام')
+        elif word_tokens[1] in ['نم', 'می'] and word_tokens[0] in ['داشت', 'دار']:
+            result = lemmatize('می\u200c' + word_tokens[2])
+    else:
+        result = ps.run(result)
+
+    if result in tracked_stems:
+        if result in tracked_stems:
+            stems[result] = stems.get(result, [])
+            if word not in stems[result]:
+                stems[result].append(word)
+    return result
