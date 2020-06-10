@@ -90,13 +90,14 @@ def stem(word):
 
     word_tokens = []
     for t in result_tokens:
-        word_tokens.append(lemmatize(t))
+        word_tokens.append(lemmatize(ps.run(t)))
 
+    result = None
     if len(word_tokens) == 1:
         result = lemmatize(ps.run(word_tokens[0]))
     elif len(word_tokens) == 2:
         if word_tokens[0] == 'نم' or word_tokens[0] == 'می':
-            result = lemmatize('می\u200c' + word_tokens[1])
+            result = lemmatize('می\u200c' + word_tokens[1] + 'م')
         elif word_tokens[1] in ['بود', 'باش', 'ام', 'اید', 'است', 'ای', 'ایم', 'اند'] and word_tokens[0].endswith(
                 'ه') and word_tokens[0] != 'خواه':
             result = lemmatize(word_tokens[0] + '\u200cام')
@@ -106,13 +107,55 @@ def stem(word):
         if word_tokens[0] == 'نم' or word_tokens[0] == 'می' and word_tokens[1].endswith('ه'):
             result = lemmatize(word_tokens[1] + '\u200cام')
         elif word_tokens[1] in ['نم', 'می'] and word_tokens[0] in ['داشت', 'دار']:
-            result = lemmatize('می\u200c' + word_tokens[2])
-    else:
-        result = ps.run(result)
+            result = lemmatize('می\u200c' + word_tokens[2] + 'م')
+
+    if result is None:
+        result = ps.run(word)
 
     if result in tracked_stems:
         if result in tracked_stems:
             stems[result] = stems.get(result, [])
             if word not in stems[result]:
                 stems[result].append(word)
+    return result
+
+
+special_phrases = [
+    'فی ما بین',
+    'چنان چه',
+    'مع ذلک',
+    'بنا بر این',
+    'جست و جو',
+    'گفت و گو',
+    'نشست و برخاست',
+    'گفت و شنود',
+    'حضرت عالی',
+    'جناب عالی',
+    'به نحو احسن',
+    'بلا درنگ',
+    'در مجموع',
+    'در کل',
+    'صلاح دید',
+    '',
+    '',
+    '',
+    '',
+    ''
+]
+special_phrases_re = []
+
+for s in special_phrases:
+    parts = s.split(' ')
+    regex = r'.*'
+    for part in parts:
+        regex += r'[\s\u200c]*' + part
+    regex += '.*'
+    special_phrases_re.append([re.compile(regex), s])
+
+
+def special_phrases_search(text):
+    result = []
+    for phrase in special_phrases_re:
+        if phrase[0].match(text) is not None:
+            result.append(phrase[1])
     return result
