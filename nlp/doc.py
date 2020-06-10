@@ -1,4 +1,5 @@
-from nlp.tokenization import get_stopwords, get_character_stopwords, get_character_numeral_stopwords, simple_tokenize
+from nlp.tokenization import get_stopwords, get_character_stopwords_phase2, get_character_numeral_stopwords, \
+    simple_tokenize, complex_tokenize
 from nlp.text import stop_word_filter, html_filter
 
 
@@ -8,10 +9,19 @@ def extract_words_from_text(text, mode):
         tokens = stop_word_filter(tokens, get_stopwords())
         return tokens
     else:
-        return None
+        tokens = complex_tokenize(str(stop_word_filter(html_filter(text), get_character_stopwords_phase2())))
+        tokens = stop_word_filter(tokens, get_stopwords())
+        return tokens
 
 
 def extract_words_from_document(doc, mode=1):
     content_text = doc[6]
     tokens = extract_words_from_text(content_text, mode)
     return tokens
+
+
+def extract_characters_from_text(text):
+    characters = {}
+    for c in text:
+        characters[c] = True
+    return characters
