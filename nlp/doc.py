@@ -1,16 +1,25 @@
 from nlp.tokenization import get_stopwords, get_character_stopwords_phase2, get_character_numeral_stopwords, \
     simple_tokenize, complex_tokenize
-from nlp.text import stop_word_filter, html_filter
+from nlp.text import stop_word_filter, html_filter, stem, normalize, stick_ha_to_plural_words, special_phrases_search
 
 
 def extract_words_from_text(text, mode):
     if mode == 1:
         tokens = simple_tokenize(str(stop_word_filter(html_filter(text), get_character_numeral_stopwords())), ' ')
+
         tokens = stop_word_filter(tokens, get_stopwords())
         return tokens
     else:
-        tokens = complex_tokenize(str(stop_word_filter(html_filter(text), get_character_stopwords_phase2())))
-        tokens = stop_word_filter(tokens, get_stopwords())
+        string = str(
+            stop_word_filter(stick_ha_to_plural_words(normalize(html_filter(text))), get_character_stopwords_phase2()))
+        special_phrases_tokens = special_phrases_search(string)
+        tokens = complex_tokenize(string)
+        new_tokens = []
+        for token in tokens:
+            new_tokens.append(stem(token))
+        for token in special_phrases_tokens:
+            new_tokens.append(token)
+        tokens = stop_word_filter(new_tokens, get_stopwords())
         return tokens
 
 

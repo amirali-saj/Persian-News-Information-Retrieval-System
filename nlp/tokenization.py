@@ -63,15 +63,15 @@ def simple_tokenize(text, separator):
 
 
 def complex_tokenize(text):
-    text = normalize(text)
     initial_tokens = word_tokenize(text)
     result = []
     half_words = ['می']
     word = ''
     word_incomplete = False
     for token in initial_tokens:
+        token = token.replace('_', '\u200c')
         if token in half_words:
-            word += token
+            word += token + '\u200c'
             word_incomplete = True
             continue
 

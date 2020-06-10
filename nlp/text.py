@@ -8,6 +8,14 @@ def html_filter(html_content):
     return re.sub(html_stuff, ' ', html_content)
 
 
+# What this function does is not necessary, and this issue can be handled more efficiently by taking 'ها' as an stop word!
+# This function is merely added so tokenizing phase output matches what project specification demands.
+
+def stick_ha_to_plural_words(text):
+    ha_plural_wrong_format_regex = re.compile('[\s]*ها[\s]*')
+    return re.sub(ha_plural_wrong_format_regex, '\u200cها ', text)
+
+
 def stop_word_filter(content, stop_words):
     if type(content) is str:
         for stop_word in stop_words:
