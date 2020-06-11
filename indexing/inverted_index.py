@@ -59,6 +59,7 @@ class InvertedIndex:
         self.postings_lists = {}  # word_id -> Term
         self.docs = []  # doc_id (array index) -> doc
         self.mode = mode
+        self.number_of_tokens = 0
 
     def get_word(self, word):
         word_id = self.dictionary.get(word, None)
@@ -100,9 +101,12 @@ class InvertedIndex:
         doc_id = len(self.docs)
         self.docs.append(doc)
         tokens = extract_words_from_document(doc, self.mode)
-
+        self.number_of_tokens += len(tokens)  # For heaps measure
         for token in tokens:
             self.add_term(token, doc_id)
+
+    def get_heaps_parameters(self):
+        return self.number_of_tokens, len(self.dictionary)
 
     def search(self, word):
         term = self.get_word(word)
