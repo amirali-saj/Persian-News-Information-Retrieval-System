@@ -1,7 +1,4 @@
-# from __future__ import unicode_literals
-
 from hazm import word_tokenize
-from nlp.text import normalize
 
 stopwords = None
 character_stopwords = None
@@ -62,6 +59,34 @@ def simple_tokenize(text, separator):
     return result
 
 
+special_phrases = [
+    'فی ما بین',
+    'چنان چه',
+    'مع ذلک',
+    'بنا بر این',
+    'جست و جو',
+    'گفت و گو',
+    'نشست و برخاست',
+    'گفت و شنود',
+    'حضرت عالی',
+    'جناب عالی',
+    'به نحو احسن',
+    'بلا درنگ',
+    'در مجموع',
+    'در کل',
+    'صلاح دید',
+    'فی الواقع',
+    'از این رو',
+    'ما حصل',
+    'در واقع',
+    'علی القاعده'
+]
+
+special_phrases_parts = []
+for s in special_phrases:
+    special_phrases_parts.append(s.split(' '))
+
+
 def complex_tokenize(text):
     initial_tokens = word_tokenize(text)
     result = []
@@ -80,6 +105,26 @@ def complex_tokenize(text):
             word = ''
             word_incomplete = False
             continue
-        result.append(token)
+        if word == 'ها':
+            result[-1] = result[-1] + '\u200cها'
+        else:
+            for parts in special_phrases_parts:
+                i = len(parts) - 1
+                check = True
+                if len(result) < len(parts):
+                    continue
+
+                while i != -1:
+                    i2 = len(parts) - 1 - i
+                    if result[-1 - i2] != parts[i]:
+                        check = False
+                        break
+                    i -= 1
+                if check:
+                    for i in range(len(parts)):
+                        result.pop(len(result) - 1)
+                    result.append(' '.join(parts))
+
+            result.append(token)
 
     return result
