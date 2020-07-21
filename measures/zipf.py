@@ -28,7 +28,7 @@ def draw_zipf_plot(dictionary,threshold):
             if i % 50 != 0:
                 continue
         points.append((log10(i+1), log10(term_list[i][1])))
-    print(m,b,points[:threshold])
+
     draw_prediction_line_with_actual_points(0, threshold, m, b, 'Zipf law', points,'log10 rank','log10 cf')
 
 
