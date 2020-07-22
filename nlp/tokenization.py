@@ -4,19 +4,13 @@ stopwords = None
 character_stopwords = None
 
 
+
+
 def get_stopwords():
-    global stopwords
-    if stopwords is None:
-        stopwords = fetch_stop_words('files/stop_words.txt')
     return stopwords
 
 
 def get_character_stopwords_phase2():
-    global character_stopwords
-    if character_stopwords is None:
-        character_stopwords = fetch_stop_words('files/character_stop_words_phase2.txt')
-        character_stopwords.append('\n')
-        character_stopwords.append('\r')
     return character_stopwords
 
 
@@ -90,12 +84,12 @@ for s in special_phrases:
 def complex_tokenize(text):
     initial_tokens = word_tokenize(text)
     result = []
-    half_words = ['می']
+    # half_words = ['می']
     word = ''
     word_incomplete = False
     for token in initial_tokens:
         token = token.replace('_', '\u200c')
-        if token in half_words:
+        if token == 'می':
             word += token + '\u200c'
             word_incomplete = True
             continue
@@ -128,3 +122,15 @@ def complex_tokenize(text):
             result.append(token)
 
     return result
+
+
+def init_parameters():
+    global stopwords
+    global character_stopwords
+    stopwords = fetch_stop_words('files/stop_words.txt')
+    character_stopwords = fetch_stop_words('files/character_stop_words_phase2.txt')
+    character_stopwords.append('\n')
+    character_stopwords.append('\r')
+
+
+init_parameters()

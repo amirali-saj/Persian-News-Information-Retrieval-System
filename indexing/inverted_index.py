@@ -101,6 +101,7 @@ class InvertedIndex:
         doc_id = len(self.docs)
         self.docs.append(doc)
         tokens = extract_words_from_document(doc, self.mode)
+
         self.number_of_tokens += len(tokens)  # For heaps measure
         for token in tokens:
             self.add_term(token, doc_id)

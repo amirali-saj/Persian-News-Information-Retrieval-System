@@ -35,16 +35,13 @@ def build_inverted_index(documents, mode=1):
         i += 1
         inverted_index.add_document(document)
         if i % 50 == 0:
-            print('indexing(',i, '/', str(len(documents)),')')
+            print('indexing(', i, '/', str(len(documents)), ')')
 
     return inverted_index
 
 
-
-
-
-
-
+iv = build_inverted_index(all_docs, 0)
+iv.store_index_to_file('files/main_dictionary.csv')
 
 stems2 = stems
 

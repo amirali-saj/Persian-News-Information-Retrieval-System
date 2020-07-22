@@ -1,10 +1,12 @@
 import re
 from PersianStemmer import PersianStemmer
 from hazm import Lemmatizer, Stemmer
+from nlp.tokenization import get_character_stopwords_phase2
+
+html_stuff = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
 
 
 def html_filter(html_content):
-    html_stuff = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
     return re.sub(html_stuff, ' ', html_content)
 
 
@@ -17,16 +19,22 @@ def stick_ha_to_plural_words(text):
 
 
 def stop_word_filter(content, stop_words):
-    if type(content) is str:
-        for stop_word in stop_words:
-            content = content.replace(stop_word, ' ')
-        return content
-    else:
-        result = []
-        for word in content:
-            if word not in stop_words:
-                result.append(word)
-        return result
+    result = []
+    for word in content:
+        if word not in stop_words:
+            result.append(word)
+    return result
+
+    # if type(content) is str:
+    #     for stop_word in stop_words:
+    #         content = content.replace(stop_word, ' ')
+    #     return content
+    # else:
+    #     result = []
+    #     for word in content:
+    #         if word not in stop_words:
+    #             result.append(word)
+    #     return result
 
 
 normalization_table = {}
@@ -63,9 +71,15 @@ for x in normalization_list_table:
     for char in x[0]:
         normalization_table[char] = x[1]
 
+for c in get_character_stopwords_phase2():
+    normalization_table[c] = ' '
+
 
 def normalize(text):
     new_text = ''
+    # next_text = text
+    # for bad_char in normalization_table.keys():
+    #     next_text = next_text.replace(bad_char, normalization_table[bad_char])
     for c in text:
         replacement = normalization_table.get(c, c)
         new_text += replacement
@@ -97,6 +111,15 @@ def stem(word):
     result_tokens = result.split(' ')
 
     word_tokens = []
+
+
+    # Uncomment this segment to increase speed at cost of accuracy!
+
+    # temp_res = ''
+    # for t in result_tokens:
+        # temp_res += lemmatize(ps.run(t)) + ' '
+    # return temp_res[:-1]
+
     for t in result_tokens:
         word_tokens.append(lemmatize(ps.run(t)))
 
@@ -120,9 +143,9 @@ def stem(word):
     if result is None:
         result = ps.run(word)
 
-    if result in tracked_stems:
-        if result in tracked_stems:
-            stems[result] = stems.get(result, [])
-            if word not in stems[result]:
-                stems[result].append(word)
+    # if result in tracked_stems:
+    #     if result in tracked_stems:
+    #         stems[result] = stems.get(result, [])
+    #         if word not in stems[result]:
+    #             stems[result].append(word)
     return result

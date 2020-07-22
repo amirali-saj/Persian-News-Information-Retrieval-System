@@ -10,12 +10,13 @@ def extract_words_from_text(text, mode):
         tokens = stop_word_filter(tokens, get_stopwords())
         return tokens
     else:
-        tokens = complex_tokenize(str(
-            normalize(stop_word_filter(html_filter(text), get_character_stopwords_phase2()))))
+        tokens = complex_tokenize(normalize(html_filter(text)))
+
         new_tokens = []
         for token in tokens:
             new_tokens.append(stem(token))
         tokens = stop_word_filter(new_tokens, get_stopwords())
+        # tokens = stop_word_filter(tokens, get_stopwords())
         return tokens
 
 
