@@ -61,6 +61,8 @@ class InvertedIndex:
         self.mode = mode
         self.number_of_tokens = 0
 
+        self.token_per_doc_frequency_table = {}  # f(t,d) table
+
     def get_word(self, word):
         word_id = self.dictionary.get(word, None)
         if word_id is None:
@@ -79,14 +81,25 @@ class InvertedIndex:
     #     term.add_posting(doc_id)
     #     return True
 
+    def increase_token_per_doc_frequency(self, word_id, doc_id):
+        key = str(word_id) + '-' + str(doc_id)
+        self.token_per_doc_frequency_table[key] = self.token_per_doc_frequency_table.get(key, 0) + 1
+
+    def get_token_per_doc_frequency(self, word_id, doc_id):
+        key = str(word_id) + '-' + str(doc_id)
+        return self.token_per_doc_frequency_table.get(key)
+
+
     def add_term(self, word, doc_id):
         term = self.get_word(word)
         if term is None:
             word_id = len(self.dictionary)
+            self.increase_token_per_doc_frequency(word_id, doc_id)
             self.dictionary[word] = word_id
             self.postings_lists[word_id] = Term(1)
             self.postings_lists[word_id].add_posting(doc_id)
             return
+        self.increase_token_per_doc_frequency(self.dictionary[word], doc_id)
         term.frequency += 1
         term.add_posting(doc_id)
 
@@ -130,7 +143,7 @@ class InvertedIndex:
         write_dictionary_to_file(self.dictionary, dictionary_path)
         write_postings_lists_to_file(self)
 
-    def load_index_from_file(self, dictionary_path,docs):
+    def load_index_from_file(self, dictionary_path, docs):
         self.docs = docs
         self.dictionary = read_dictionary_from_file(dictionary_path)
         add_all_posting_lists_from_file(self)
