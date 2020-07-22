@@ -23,15 +23,17 @@ def fetch_docs_from_file(path):
 
 
 def add_all_posting_lists_from_file(inverted_index):
-    pattern = re.compile('^.*{[0-1]}[\.]csv$')
     files = os.listdir('files/postings')
     posting_files = []
     for file_name in files:
-        if re.match(pattern, file_name) is not None:
-            posting_files.append('files/postings' + file_name)
+        if re.match('^postings\([0-1]\)\d+\-\d+[\.]csv$', file_name) is not None:
+            posting_files.append('files/postings/' + file_name)
 
     for file_name in posting_files:
         posting_lists = fetch_csv_from_file(file_name)
+        print(file_name,'::>')
+        print(posting_lists)
+
         for posting_list in posting_lists:
             word_id = int(posting_list[0])
             for i in range(len(posting_list)):
@@ -53,7 +55,7 @@ def add_posting_list_from_file(word_id, inverted_index):
 
 def find_word_id_file_name(word_id, mode=1):
     index = (word_id // 2000) * 2000
-    name = 'files/postings/postings{' + str(mode) + '}' + str(index) + '-' + str((index + 2000)) + '.csv'
+    name = 'files/postings/postings(' + str(mode) + ')' + str(index) + '-' + str((index + 2000)) + '.csv'
     return name
 
 
@@ -77,8 +79,14 @@ def write_postings_lists_to_file(inverted_index):
         csv_string += '\n'
 
         if word_id % 2000 == 1999:
+            print(find_word_id_file_name(word_id, inverted_index.mode), ':>')
+            print(csv_string)
             write_to_file(find_word_id_file_name(word_id, inverted_index.mode), csv_string)
             csv_string = ''
+    if csv_string != '':
+        print(find_word_id_file_name(word_id, inverted_index.mode), ':>')
+        print(csv_string)
+        write_to_file(find_word_id_file_name(word_id, inverted_index.mode), csv_string)
 
 
 def write_dictionary_to_file(dictionary, path):

@@ -108,6 +108,7 @@ class InvertedIndex:
     def get_heaps_parameters(self):
         return self.number_of_tokens, len(self.dictionary)
 
+    # TODO: Change this search method!
     def search(self, word):
         term = self.get_word(word)
 
