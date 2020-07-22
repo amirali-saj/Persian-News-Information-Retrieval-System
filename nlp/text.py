@@ -112,12 +112,11 @@ def stem(word):
 
     word_tokens = []
 
-
-    # Uncomment this segment to increase speed at cost of accuracy!
+    # Uncomment this section to increase speed at cost of accuracy!
 
     # temp_res = ''
     # for t in result_tokens:
-        # temp_res += lemmatize(ps.run(t)) + ' '
+    # temp_res += lemmatize(ps.run(t)) + ' '
     # return temp_res[:-1]
 
     for t in result_tokens:
