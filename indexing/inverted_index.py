@@ -87,7 +87,7 @@ class InvertedIndex:
 
     def get_token_per_doc_frequency(self, word_id, doc_id):
         key = str(word_id) + '-' + str(doc_id)
-        return self.token_per_doc_frequency_table.get(key)
+        return self.token_per_doc_frequency_table.get(key,0)
 
 
     def add_term(self, word, doc_id):
