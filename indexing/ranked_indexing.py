@@ -2,6 +2,7 @@ from math import log10 as log, sqrt
 
 from indexing.inverted_index import InvertedIndex
 from nlp.doc import extract_words_from_text
+from datastructures.heap import build_max_heap, pick_max
 
 
 def find_idf(postings_list, docs_count):
@@ -22,7 +23,7 @@ def convert_to_vector(text, idf_dict, dictionary, mode):
     for word in words:
         word_counts[word] = word_counts.get(word, 0) + 1
 
-    doc_vector = []
+    doc_vector = {}
     for word in words:
         word_id = dictionary.get(word)
         if word_id is None:
@@ -50,14 +51,19 @@ def calculate_cosine_similarity(doc_vector1, doc_vector2):
     return dot_result / (size1 * size2)
 
 
-# TODO: Index elimination!
+# TODO: Index elimination (partially done)!
 class RankedIndex:
-    def __init__(self, inverted_index):
+    def __init__(self, inverted_index, idf_index_elimination_threshold, count_of_words_in_common_threshold):
+        # Index elimination parameters.
+        self.idf_threshold = idf_index_elimination_threshold
+        self.word_count_threshold = count_of_words_in_common_threshold
+
         self.inverted_index = inverted_index
         # Represent docs as vectors and remove zero vectors!
         self.docs_vectors = []
         docs = self.inverted_index.docs
         idf_dict = find_idf(self.inverted_index.postings_lists, len(docs))
+        self.idf_dict = idf_dict
         for doc_id in range(len(docs)):
             doc_vector = {}  # [0 for i in range(len(idf_dict.keys()))]
             for word_id in idf_dict:
@@ -120,3 +126,32 @@ class RankedIndex:
                 # input('continue?')
 
             return doc[1], top_5_max, top_5_min
+
+    def search(self, query, k=10):
+        query_vector = convert_to_vector(query, self.idf_dict, self.inverted_index.dictionary, self.inverted_index.mode)
+        results = []
+        docs_set = set()
+        docs_words_in_common_count = {}
+        for word_id in query_vector.keys():
+            if self.idf_dict[word_id] < self.idf_threshold:  # Index elimination for words with idf below threshold
+                continue
+            postings = self.inverted_index.postings_lists[word_id].next_posting
+            while postings is not None:
+                docs_words_in_common_count[postings.doc_id] = docs_words_in_common_count.get(postings.doc_id, 0) + 1
+                docs_set.add(postings.doc_id)
+                postings = postings.next
+        for doc_id in docs_set:
+            # Index elimination for docs with number of words in common with query below the threshold
+            if docs_words_in_common_count.get(doc_id, 0) < self.word_count_threshold:
+                continue
+            score = calculate_cosine_similarity(query_vector, self.docs_vectors[doc_id])
+            results.append((doc_id, score))
+
+        def score_function(result_tuple):
+            return result_tuple[1]
+
+        build_max_heap(results, score_function)
+
+        ranked_results = []
+        for i in range(k):
+            ranked_results.append(pick_max(results, score_function, (-1, 0)))
