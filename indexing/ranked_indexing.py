@@ -1,6 +1,5 @@
 from math import log10 as log, sqrt
 
-from indexing.inverted_index import InvertedIndex
 from nlp.doc import extract_words_from_text
 from datastructures.heap import build_max_heap, pick_max
 
@@ -155,3 +154,9 @@ class RankedIndex:
         ranked_results = []
         for i in range(k):
             ranked_results.append(pick_max(results, score_function, (-1, 0)))
+
+        final_results = []
+        for res in ranked_results:
+            if res[0] != -1:
+                final_results.append((self.inverted_index.docs[res[0]], res[1]))
+        return final_results
