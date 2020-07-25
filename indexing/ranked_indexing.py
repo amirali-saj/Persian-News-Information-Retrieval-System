@@ -70,8 +70,7 @@ class RankedIndex:
                 if tf != 0:
                     weight = (1 + log(tf)) * idf_dict[word_id]
                     doc_vector[word_id] = weight
-            if len(doc_vector) != 0:
-                self.docs_vectors.append(doc_vector)
+            self.docs_vectors.append(doc_vector)
         print('Done!')
 
     # Used for testing the tf-idf measure informally.
@@ -119,10 +118,6 @@ class RankedIndex:
                     top_5_min.pop(0)
                 if len(top_5_max) > 5:
                     top_5_max.pop(len(top_5_max) - 1)
-                # print(top_5_min,top_5_max)
-                # print(word)
-                # print(score)
-                # input('continue?')
 
             return doc[1], top_5_max, top_5_min
 
@@ -141,10 +136,17 @@ class RankedIndex:
                 postings = postings.next
         for doc_id in docs_set:
             # Index elimination for docs with number of words in common with query below the threshold
-            if docs_words_in_common_count.get(doc_id, 0) < self.word_count_threshold:
+            if self.word_count_threshold != 1 and docs_words_in_common_count.get(doc_id, 0) < self.word_count_threshold:
                 continue
             score = calculate_cosine_similarity(query_vector, self.docs_vectors[doc_id])
             results.append((doc_id, score))
+
+        if len(results) < k:
+            final_results = []
+            for res in results:
+                if res[0] != -1:
+                    final_results.append((self.inverted_index.docs[res[0]], res[1]))
+            return final_results
 
         def score_function(result_tuple):
             return result_tuple[1]

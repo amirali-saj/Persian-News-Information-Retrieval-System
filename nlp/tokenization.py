@@ -127,8 +127,8 @@ def complex_tokenize(text):
 def init_parameters():
     global stopwords
     global character_stopwords
-    stopwords = fetch_stop_words('files/stop_words.txt')
-    character_stopwords = fetch_stop_words('files/character_stop_words_phase2.txt')
+    stopwords = fetch_stop_words('../files/stop_words.txt')
+    character_stopwords = fetch_stop_words('../files/character_stop_words_phase2.txt')
     character_stopwords.append('\n')
     character_stopwords.append('\r')
 

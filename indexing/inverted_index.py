@@ -141,7 +141,10 @@ class InvertedIndex:
 
     def store_index_to_file(self, dictionary_path):
         write_dictionary_to_file(self.dictionary, dictionary_path)
+        print('half-bef')
         write_postings_lists_to_file(self)
+        print('half-bef2')
+
 
     def load_index_from_file(self, dictionary_path, docs):
         self.docs = docs

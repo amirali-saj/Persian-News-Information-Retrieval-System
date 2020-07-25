@@ -4,11 +4,11 @@ from indexing.inverted_index import InvertedIndex
 from util.file import fetch_docs_from_file
 from nlp.text import stems
 
-# doc_paths = ['dataset/ir-news-0-2.csv', 'dataset/ir-news-2-4.csv',
-#              'dataset/ir-news-4-6.csv', 'dataset/ir-news-6-8.csv',
-#              'dataset/ir-news-8-10.csv', 'dataset/ir-news-10-12.csv']
+doc_paths = ['../dataset/ir-news-0-2.csv', '../dataset/ir-news-2-4.csv',
+             '../dataset/ir-news-4-6.csv', '../dataset/ir-news-6-8.csv',
+             '../dataset/ir-news-8-10.csv', '../dataset/ir-news-10-12.csv']
 
-doc_paths = ['dataset/ir-news-0-2.csv']
+# doc_paths = ['../dataset/ir-news-0-2.csv']
 
 all_docs = []
 
@@ -42,17 +42,22 @@ def build_inverted_index(documents, mode=1):
     return inverted_index
 
 
-iv = build_inverted_index(all_docs[:500], 0)
-iv.store_index_to_file('files/main_dictionary.csv')
+iv = build_inverted_index(all_docs, 0)
+print('bef-here3')
+
+iv.store_index_to_file('../files/main_dictionary.csv')
+
+print('bef-here2')
 from indexing.ranked_indexing import RankedIndex
 
-rx = RankedIndex(iv)
+from math import log10 as log
+rx = RankedIndex(iv,log(10/4),1)
 
 # print(rx.docs_vectors[:2],'\n\ndcs:\n',iv.docs[:2],'\n\ndict:\n')
 # for d in iv.dictionary:
 #     print(d,iv.dictionary[d])
 
-
+print('bef-here1')
 a, b, c = rx.temp_doc_title_top_5_words(0)
 print(a, b, c)
 a, b, c = rx.temp_doc_title_top_5_words(5)
@@ -64,6 +69,8 @@ print(a, b, c)
 a, b, c = rx.temp_doc_title_top_5_words(257)
 print(a, b, c)
 
+
+print('here')
 x = 'hh'
 while x != 'exit':
     x = input('>')

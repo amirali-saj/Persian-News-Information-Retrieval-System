@@ -4,8 +4,32 @@ import re
 import os
 
 
+def write_docs_vectors_to_file(docs_vectors, path):
+    csv_string = ''
+    for doc_id in range(len(docs_vectors)):
+        if len(docs_vectors[doc_id].keys()) != 0:
+            for word_id in docs_vectors[doc_id].keys():
+                csv_string += str(word_id) + ':' + str(docs_vectors[doc_id][word_id]) + ','
+            csv_string = csv_string[:-1]
+        csv_string += '\n'
+    write_to_file(path, csv_string)
+
+
+def read_docs_vectors_fom_file(path):
+    docs_vectors = []
+    results = fetch_csv_from_file(path)
+    for i in range(len(results)):
+        res = results[i]
+        doc_vector = {}
+        for field in res:
+            tokens = field.split(':')
+            doc_vector[int(tokens[0])] = float(tokens[1])
+        docs_vectors.append(doc_vector)
+    return docs_vectors
+
+
 def read_text_file():
-    file = open('files/stop_words.txt', 'r')
+    file = open('../files/stop_words.txt', 'r')
     return file.read()
 
 
@@ -23,16 +47,14 @@ def fetch_docs_from_file(path):
 
 
 def add_all_posting_lists_from_file(inverted_index):
-    files = os.listdir('files/postings')
+    files = os.listdir('../files/postings')
     posting_files = []
     for file_name in files:
         if re.match('^postings\([0-1]\)\d+\-\d+[\.]csv$', file_name) is not None:
-            posting_files.append('files/postings/' + file_name)
+            posting_files.append('../files/postings/' + file_name)
 
     for file_name in posting_files:
         posting_lists = fetch_csv_from_file(file_name)
-        print(file_name,'::>')
-        print(posting_lists)
 
         for posting_list in posting_lists:
             word_id = int(posting_list[0])
@@ -55,7 +77,7 @@ def add_posting_list_from_file(word_id, inverted_index):
 
 def find_word_id_file_name(word_id, mode=1):
     index = (word_id // 2000) * 2000
-    name = 'files/postings/postings(' + str(mode) + ')' + str(index) + '-' + str((index + 2000)) + '.csv'
+    name = '../files/postings/postings(' + str(mode) + ')' + str(index) + '-' + str((index + 2000)) + '.csv'
     return name
 
 
@@ -79,13 +101,10 @@ def write_postings_lists_to_file(inverted_index):
         csv_string += '\n'
 
         if word_id % 2000 == 1999:
-            print(find_word_id_file_name(word_id, inverted_index.mode), ':>')
-            print(csv_string)
             write_to_file(find_word_id_file_name(word_id, inverted_index.mode), csv_string)
             csv_string = ''
+
     if csv_string != '':
-        print(find_word_id_file_name(word_id, inverted_index.mode), ':>')
-        print(csv_string)
         write_to_file(find_word_id_file_name(word_id, inverted_index.mode), csv_string)
 
 
