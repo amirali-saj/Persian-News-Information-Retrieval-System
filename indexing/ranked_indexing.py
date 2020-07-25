@@ -3,6 +3,10 @@ from math import log10 as log, sqrt
 from nlp.doc import extract_words_from_text
 from datastructures.heap import build_max_heap, pick_max
 
+from indexing.inverted_index import InvertedIndex
+from util.file import write_docs_vectors_to_file, read_docs_vectors_fom_file, write_dictionary_to_file, \
+    read_dictionary_from_file
+
 
 def find_idf(postings_list, docs_count):
     result = {}
@@ -57,20 +61,25 @@ class RankedIndex:
         self.idf_threshold = idf_index_elimination_threshold
         self.word_count_threshold = count_of_words_in_common_threshold
 
-        self.inverted_index = inverted_index
-        # Represent docs as vectors and remove zero vectors!
+        # Represent docs as vectors!
         self.docs_vectors = []
-        docs = self.inverted_index.docs
-        idf_dict = find_idf(self.inverted_index.postings_lists, len(docs))
-        self.idf_dict = idf_dict
-        for doc_id in range(len(docs)):
-            doc_vector = {}  # [0 for i in range(len(idf_dict.keys()))]
-            for word_id in idf_dict:
-                tf = self.inverted_index.get_token_per_doc_frequency(word_id, doc_id)
-                if tf != 0:
-                    weight = (1 + log(tf)) * idf_dict[word_id]
-                    doc_vector[word_id] = weight
-            self.docs_vectors.append(doc_vector)
+        self.inverted_index = inverted_index
+        self.idf_dict = None
+        if inverted_index is not None:
+            self.inverted_index = inverted_index
+            docs = self.inverted_index.docs
+            idf_dict = find_idf(self.inverted_index.postings_lists, len(docs))
+            self.idf_dict = idf_dict
+            for doc_id in range(len(docs)):
+                doc_vector = {}  # [0 for i in range(len(idf_dict.keys()))]
+                for word_id in idf_dict:
+                    tf = self.inverted_index.get_token_per_doc_frequency(word_id, doc_id)
+                    if tf != 0:
+                        weight = (1 + log(tf)) * idf_dict[word_id]
+                        doc_vector[word_id] = weight
+                self.docs_vectors.append(doc_vector)
+        else:
+            print('Postponed!')
         print('Done!')
 
     # Used for testing the tf-idf measure informally.
@@ -150,15 +159,28 @@ class RankedIndex:
 
         def score_function(result_tuple):
             return result_tuple[1]
-
+        print(results,'pre')
         build_max_heap(results, score_function)
-
+        print(results,'post')
         ranked_results = []
         for i in range(k):
             ranked_results.append(pick_max(results, score_function, (-1, 0)))
-
+            print(i,'>',ranked_results[-1])
         final_results = []
         for res in ranked_results:
             if res[0] != -1:
                 final_results.append((self.inverted_index.docs[res[0]], res[1]))
         return final_results
+
+    def store_index_to_file(self, exclude_inverted_index=False):
+        if not exclude_inverted_index:
+            self.inverted_index.store_index_to_file()
+        write_dictionary_to_file(self.idf_dict, '../files/export/idf.csv', non_string_key=True)
+        write_docs_vectors_to_file(self.docs_vectors, '../files/export/doc_vectors.csv')
+
+    def load_index_from_file(self, exclude_inverted_index=False, docs=None, mode=0):
+        if not exclude_inverted_index:
+            self.inverted_index = InvertedIndex(mode)
+            self.inverted_index.load_index_from_file(docs)
+        self.idf_dict = read_dictionary_from_file('../files/export/idf.csv', float,key_type=int)
+        self.docs_vectors = read_docs_vectors_fom_file('../files/export/doc_vectors.csv')

@@ -41,12 +41,11 @@ def build_inverted_index(documents, mode=1):
 
     return inverted_index
 
-
-iv = build_inverted_index(all_docs[:500], 0)
-iv.store_index_to_file('files/main_dictionary.csv')
 from indexing.ranked_indexing import RankedIndex
 
+iv = build_inverted_index(all_docs[:500], 0)
 rx = RankedIndex(iv)
+rx.store_index_to_file()
 
 # print(rx.docs_vectors[:2],'\n\ndcs:\n',iv.docs[:2],'\n\ndict:\n')
 # for d in iv.dictionary:

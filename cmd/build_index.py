@@ -4,11 +4,11 @@ from indexing.inverted_index import InvertedIndex
 from util.file import fetch_docs_from_file
 from nlp.text import stems
 
-doc_paths = ['../dataset/ir-news-0-2.csv', '../dataset/ir-news-2-4.csv',
-             '../dataset/ir-news-4-6.csv', '../dataset/ir-news-6-8.csv',
-             '../dataset/ir-news-8-10.csv', '../dataset/ir-news-10-12.csv']
+# doc_paths = ['../dataset/ir-news-0-2.csv', '../dataset/ir-news-2-4.csv',
+#              '../dataset/ir-news-4-6.csv', '../dataset/ir-news-6-8.csv',
+#              '../dataset/ir-news-8-10.csv', '../dataset/ir-news-10-12.csv']
 
-# doc_paths = ['../dataset/ir-news-0-2.csv']
+doc_paths = ['../dataset/ir-news-0-2.csv']
 
 all_docs = []
 
@@ -42,16 +42,28 @@ def build_inverted_index(documents, mode=1):
     return inverted_index
 
 
-iv = build_inverted_index(all_docs, 0)
+iv = build_inverted_index(all_docs[:1000], 0)
 print('bef-here3')
 
-iv.store_index_to_file('../files/main_dictionary.csv')
+# iv.store_index_to_file('../files/main_dictionary.csv')
 
 print('bef-here2')
 from indexing.ranked_indexing import RankedIndex
 
 from math import log10 as log
+
 rx = RankedIndex(iv,log(10/4),1)
+print('bef-here1.5')
+# rx.store_index_to_file()
+
+# rx2 = RankedIndex(None,log(10/4),1)
+#
+# rx2.load_index_from_file(docs=all_docs[:1000],mode=0)
+#
+#
+# rx = rx2
+#
+
 
 # print(rx.docs_vectors[:2],'\n\ndcs:\n',iv.docs[:2],'\n\ndict:\n')
 # for d in iv.dictionary:

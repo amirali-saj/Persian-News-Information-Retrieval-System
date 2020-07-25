@@ -47,11 +47,11 @@ def fetch_docs_from_file(path):
 
 
 def add_all_posting_lists_from_file(inverted_index):
-    files = os.listdir('../files/postings')
+    files = os.listdir('../files/export/postings')
     posting_files = []
     for file_name in files:
         if re.match('^postings\([0-1]\)\d+\-\d+[\.]csv$', file_name) is not None:
-            posting_files.append('../files/postings/' + file_name)
+            posting_files.append('../files/export/postings/' + file_name)
 
     for file_name in posting_files:
         posting_lists = fetch_csv_from_file(file_name)
@@ -77,7 +77,7 @@ def add_posting_list_from_file(word_id, inverted_index):
 
 def find_word_id_file_name(word_id, mode=1):
     index = (word_id // 2000) * 2000
-    name = '../files/postings/postings(' + str(mode) + ')' + str(index) + '-' + str((index + 2000)) + '.csv'
+    name = '../files/export/postings/postings(' + str(mode) + ')' + str(index) + '-' + str((index + 2000)) + '.csv'
     return name
 
 
@@ -108,16 +108,20 @@ def write_postings_lists_to_file(inverted_index):
         write_to_file(find_word_id_file_name(word_id, inverted_index.mode), csv_string)
 
 
-def write_dictionary_to_file(dictionary, path):
+def write_dictionary_to_file(dictionary, path, non_string_key=False):
     csv_string = ''
-    for word in dictionary.keys():
-        csv_string += word + ',' + str(dictionary[word]) + '\n'
+    if not non_string_key:
+        for word in dictionary.keys():
+            csv_string += word + ',' + str(dictionary[word]) + '\n'
+    else:
+        for word in dictionary.keys():
+            csv_string += str(word) + ',' + str(dictionary[word]) + '\n'
     write_to_file(path, csv_string)
 
 
-def read_dictionary_from_file(path):
+def read_dictionary_from_file(path, value_type, key_type=str):
     dictionary = {}
     result = fetch_csv_from_file(path)
     for pair in result:
-        dictionary[pair[0]] = int(pair[1])
+        dictionary[key_type(pair[0])] = value_type(pair[1])
     return dictionary

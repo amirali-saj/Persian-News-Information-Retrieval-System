@@ -87,8 +87,7 @@ class InvertedIndex:
 
     def get_token_per_doc_frequency(self, word_id, doc_id):
         key = str(word_id) + '-' + str(doc_id)
-        return self.token_per_doc_frequency_table.get(key,0)
-
+        return self.token_per_doc_frequency_table.get(key, 0)
 
     def add_term(self, word, doc_id):
         term = self.get_word(word)
@@ -139,14 +138,15 @@ class InvertedIndex:
 
         return result_docs
 
-    def store_index_to_file(self, dictionary_path):
-        write_dictionary_to_file(self.dictionary, dictionary_path)
+    def store_index_to_file(self):
+        write_dictionary_to_file(self.dictionary, '../files/export/dictionary.csv')
+        write_dictionary_to_file(self.token_per_doc_frequency_table,'../files/export/term_doc_freq.csv')
         print('half-bef')
         write_postings_lists_to_file(self)
         print('half-bef2')
 
-
-    def load_index_from_file(self, dictionary_path, docs):
+    def load_index_from_file(self, docs):
         self.docs = docs
-        self.dictionary = read_dictionary_from_file(dictionary_path)
+        self.dictionary = read_dictionary_from_file('../files/export/dictionary.csv',int)
+        self.token_per_doc_frequency_table = read_dictionary_from_file('../files/export/term_doc_freq.csv',int)
         add_all_posting_lists_from_file(self)
