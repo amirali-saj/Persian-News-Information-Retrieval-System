@@ -1,4 +1,4 @@
-from nlp.doc import extract_words_from_document
+from nlp.doc import extract_words_from_document, extract_words_from_text
 from uuid import uuid4
 from util.file import add_posting_list_from_file, write_dictionary_to_file, write_postings_lists_to_file, \
     read_dictionary_from_file, add_all_posting_lists_from_file
@@ -41,16 +41,17 @@ class Posting:
 
 
 class Term:
-    def __init__(self, frequency):
-        self.frequency = frequency
-        self.next_posting = None
+    def __init__(self, first_doc_id):
+        self.postings = [first_doc_id]
+        self.frequency = 1
 
     def add_posting(self, doc_id):
-        posting = Posting(doc_id)
-        if self.next_posting is None:
-            self.next_posting = posting
-        else:
-            self.next_posting.append_posting(posting)
+        self.frequency += 1
+        if doc_id != self.postings[-1]:
+            self.postings.append(doc_id)
+
+    def df(self):  # Document frequency (number of documents containing the term)
+        return len(self.postings)
 
 
 class InvertedIndex:
@@ -65,13 +66,19 @@ class InvertedIndex:
 
     def get_word(self, word):
         word_id = self.dictionary.get(word, None)
+        print('ch1')
+        if word_id is None:
+            print('None I guess')
         if word_id is None:
             return None
+        print('ch2', word_id)
         posting_list = self.postings_lists.get(word_id, None)
         if posting_list is not None:
             return posting_list
         else:  # Read from file otherwise
+            print('ch3-dep')
             add_posting_list_from_file(word_id, self)
+        print('ch3-die')
         return self.postings_lists.get(word_id, None)
 
     # def add_posting(self, word, doc_id):
@@ -92,29 +99,27 @@ class InvertedIndex:
     def add_term(self, word, doc_id):
 
         term = self.postings_lists.get(self.dictionary.get(word))
-        #self.get_word(word)
+        # self.get_word(word)
         if term is None:
             word_id = len(self.dictionary)
             self.increase_token_per_doc_frequency(word_id, doc_id)
             self.dictionary[word] = word_id
-            self.postings_lists[word_id] = Term(1)
-            self.postings_lists[word_id].add_posting(doc_id)
+            self.postings_lists[word_id] = Term(doc_id)
             return
         self.increase_token_per_doc_frequency(self.dictionary[word], doc_id)
-        term.frequency += 1
         term.add_posting(doc_id)
 
     def add_term_by_id(self, word_id, doc_id):
         term = self.postings_lists.get(word_id, None)
         if term is None:
-            term = self.postings_lists[word_id] = Term(0)
-        term.frequency += 1
-        term.add_posting(doc_id)
+            self.postings_lists[word_id] = Term(doc_id)
+        else:
+            term.add_posting(doc_id)
 
     def add_document(self, doc):
         doc_id = len(self.docs)
         self.docs.append(doc)
-        tokens = extract_words_from_document(doc,self.mode)
+        tokens = extract_words_from_document(doc, self.mode)
 
         self.number_of_tokens += len(tokens)  # For heaps measure
         for token in tokens:
@@ -125,32 +130,30 @@ class InvertedIndex:
 
     # TODO: Change this search method!
     def search(self, word):
+        if word == '':
+            return []
+        words = extract_words_from_text(word, 0)
+        word = words[0]
+        print(words, word)
         term = self.get_word(word)
 
         if term is None:
             return []
 
-        result_docs = []
-
-        posting = term.next_posting
-
-        while posting is not None:
-            result_docs.append(self.docs[posting.doc_id])
-            posting = posting.next
-
+        result_docs = term.postings
         return result_docs
 
     def store_index_to_file(self):
         write_dictionary_to_file(self.dictionary, '../files/export/dictionary.csv')
-        write_dictionary_to_file(self.token_per_doc_frequency_table,'../files/export/term_doc_freq.csv')
+        write_dictionary_to_file(self.token_per_doc_frequency_table, '../files/export/term_doc_freq.csv')
         print('half-bef')
         write_postings_lists_to_file(self)
         print('half-bef2')
 
     def load_index_from_file(self, docs):
         self.docs = docs
-        self.dictionary = read_dictionary_from_file('../files/export/dictionary.csv',int)
+        self.dictionary = read_dictionary_from_file('../files/export/dictionary.csv', int)
         print('Read dictionary')
-        self.token_per_doc_frequency_table = read_dictionary_from_file('../files/export/term_doc_freq.csv',int)
+        self.token_per_doc_frequency_table = read_dictionary_from_file('../files/export/term_doc_freq.csv', int)
         print('tdf')
         add_all_posting_lists_from_file(self)

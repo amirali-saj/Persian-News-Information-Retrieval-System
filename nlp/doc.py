@@ -1,6 +1,6 @@
 from nlp.tokenization import get_stopwords, get_character_stopwords_phase2, get_character_numeral_stopwords, \
     simple_tokenize, complex_tokenize
-from nlp.text import stop_word_filter, html_filter, stem, normalize
+from nlp.text import stop_word_filter, html_filter, fast_stem, normalize
 
 
 def extract_words_from_text(text, mode):
@@ -11,11 +11,11 @@ def extract_words_from_text(text, mode):
         return tokens
     else:
         tokens = complex_tokenize(normalize(html_filter(text)))
+        for i in range(len(tokens)):
+            tokens[i] = fast_stem(tokens[i])
+                #stem(tokens[i])
+        tokens = stop_word_filter(tokens, get_stopwords())
 
-        new_tokens = []
-        for token in tokens:
-            new_tokens.append(stem(token))
-        tokens = stop_word_filter(new_tokens, get_stopwords())
         # tokens = stop_word_filter(tokens, get_stopwords())
         return tokens
 

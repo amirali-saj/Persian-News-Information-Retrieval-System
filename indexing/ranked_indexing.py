@@ -11,12 +11,7 @@ from util.file import write_docs_vectors_to_file, read_docs_vectors_fom_file, wr
 def find_idf(postings_list, docs_count):
     result = {}
     for word_id in postings_list:
-        p = postings_list[word_id].next_posting
-        df = 0
-        while p is not None:
-            df += 1
-            p = p.next
-        result[word_id] = log(docs_count / df)
+        result[word_id] = log(docs_count / postings_list[word_id].df())
     return result
 
 
@@ -77,6 +72,7 @@ class RankedIndex:
                     if tf != 0:
                         weight = (1 + log(tf)) * idf_dict[word_id]
                         doc_vector[word_id] = weight
+                print(doc_id,'/',len(docs))
                 self.docs_vectors.append(doc_vector)
         else:
             print('Postponed!')
@@ -138,11 +134,10 @@ class RankedIndex:
         for word_id in query_vector.keys():
             if self.idf_dict[word_id] < self.idf_threshold:  # Index elimination for words with idf below threshold
                 continue
-            postings = self.inverted_index.postings_lists[word_id].next_posting
-            while postings is not None:
-                docs_words_in_common_count[postings.doc_id] = docs_words_in_common_count.get(postings.doc_id, 0) + 1
-                docs_set.add(postings.doc_id)
-                postings = postings.next
+            postings = self.inverted_index.postings_lists[word_id].postings
+            for doc_id in postings:
+                docs_words_in_common_count[doc_id] = docs_words_in_common_count.get(doc_id, 0) + 1
+                docs_set.add(doc_id)
         for doc_id in docs_set:
             # Index elimination for docs with number of words in common with query below the threshold
             if self.word_count_threshold != 1 and docs_words_in_common_count.get(doc_id, 0) < self.word_count_threshold:
@@ -159,13 +154,14 @@ class RankedIndex:
 
         def score_function(result_tuple):
             return result_tuple[1]
-        print(results,'pre')
+
+        print(results, 'pre')
         build_max_heap(results, score_function)
-        print(results,'post')
+        print(results, 'post')
         ranked_results = []
         for i in range(k):
             ranked_results.append(pick_max(results, score_function, (-1, 0)))
-            print(i,'>',ranked_results[-1])
+            print(i, '>', ranked_results[-1])
         final_results = []
         for res in ranked_results:
             if res[0] != -1:
@@ -175,12 +171,15 @@ class RankedIndex:
     def store_index_to_file(self, exclude_inverted_index=False):
         if not exclude_inverted_index:
             self.inverted_index.store_index_to_file()
+            print('inverted index saved')
         write_dictionary_to_file(self.idf_dict, '../files/export/idf.csv', non_string_key=True)
+        print('idf saved')
         write_docs_vectors_to_file(self.docs_vectors, '../files/export/doc_vectors.csv')
+        print('doc vectors saved!')
 
     def load_index_from_file(self, exclude_inverted_index=False, docs=None, mode=0):
         if not exclude_inverted_index:
             self.inverted_index = InvertedIndex(mode)
             self.inverted_index.load_index_from_file(docs)
-        self.idf_dict = read_dictionary_from_file('../files/export/idf.csv', float,key_type=int)
+        self.idf_dict = read_dictionary_from_file('../files/export/idf.csv', float, key_type=int)
         self.docs_vectors = read_docs_vectors_fom_file('../files/export/doc_vectors.csv')

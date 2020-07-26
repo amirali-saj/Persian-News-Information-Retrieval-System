@@ -54,6 +54,7 @@ def add_all_posting_lists_from_file(inverted_index):
             posting_files.append('../files/export/postings/' + file_name)
 
     for file_name in posting_files:
+        print('reading ', file_name)
         posting_lists = fetch_csv_from_file(file_name)
 
         for posting_list in posting_lists:
@@ -61,6 +62,8 @@ def add_all_posting_lists_from_file(inverted_index):
             for i in range(len(posting_list)):
                 if i < 1:
                     continue
+                if i % 50 == 0:
+                    print(word_id, i, '/', len(posting_list) - 1)
                 inverted_index.add_term_by_id(word_id, int(posting_list[i]))
 
 
@@ -92,12 +95,8 @@ def write_postings_lists_to_file(inverted_index):
     for word_id in range(len(inverted_index.dictionary)):
         term = inverted_index.postings_lists.get(word_id, None)
         csv_string += str(word_id)
-
-        p = term.next_posting
-        while p is not None:
-            csv_string += ',' + str(p.doc_id)
-            p = p.next
-
+        for doc_id in term.postings:
+            csv_string += ',' + str(doc_id)
         csv_string += '\n'
 
         if word_id % 2000 == 1999:

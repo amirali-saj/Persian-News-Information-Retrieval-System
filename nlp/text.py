@@ -62,8 +62,12 @@ normalization_list_table = [
     (['ﺪ'], 'د'),
     (['ﺮ'], 'ر'),
     (['إ', 'أ', 'آ'], 'ا'),
-    (['َ', '“', 'ّ,', 'ً', '؛', 'ٔ', '؟', ',', 'ِ', '”', 'ُ', '\u200f', '\u200e', '\u200d', '\u202c', '\u200a',
+    (['َ', '“', 'ّ,', 'ً', '؛', 'ٔ', '؟', ',', 'ِ', '”', 'ُ', 'ٕ', 'ٔ', 'ٓ', 'ْ', '', 'ّ', 'ِ', 'ُ', 'َ', 'ٍ', 'ٌ', 'ً'
+                                                                                                                    '\u200f',
+      '\u200e', '\u200d', '\u202c', '\u200a',
       '\u202b'], ''),
+    (['+', '-,''٬', '9', '8', '7', '6', '5', '4', '3', '2', '1', '0',
+      '۹', '۱', '۲', '۳', '٤', '۴', '۵', '۶', '۷', '۸'], ' '),
     (['\u1680', '\u2005', '\u2006', '\u2009', '\u200A', '\u200B', '\u202F', '\uFEFF'], '\u200c')
 ]
 
@@ -104,6 +108,31 @@ def lemmatize(word):
         else:
             result = parts[1]
     return result
+
+
+def fast_stem(word):
+    verb_stem = lemmatizer.lemmatize(word)
+    if '#' in verb_stem:
+        parts = verb_stem.split('#')
+        if parts[0] in word and parts[0] != '':
+            return parts[0]
+        else:
+            return parts[1]
+    stem = ps.run(word)
+    if stem.endswith('ه'):
+        stem2 = stem[:-1] + 'م'
+    else:
+        stem2 = stem
+    word2 = stem2.replace(' ', '\u200c')
+    verb_stem = lemmatizer.lemmatize(word2)
+    if '#' in verb_stem:
+        parts = verb_stem.split('#')
+        if parts[0] in word and parts[0] != '':
+            return parts[0]
+        else:
+            return parts[1]
+    else:
+        return stem
 
 
 def stem(word):

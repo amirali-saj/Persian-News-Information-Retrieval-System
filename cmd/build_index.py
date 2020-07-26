@@ -4,11 +4,11 @@ from indexing.inverted_index import InvertedIndex
 from util.file import fetch_docs_from_file
 from nlp.text import stems
 
-# doc_paths = ['../dataset/ir-news-0-2.csv', '../dataset/ir-news-2-4.csv',
-#              '../dataset/ir-news-4-6.csv', '../dataset/ir-news-6-8.csv',
-#              '../dataset/ir-news-8-10.csv', '../dataset/ir-news-10-12.csv']
+doc_paths = ['../dataset/ir-news-0-2.csv', '../dataset/ir-news-2-4.csv',
+             '../dataset/ir-news-4-6.csv', '../dataset/ir-news-6-8.csv',
+             '../dataset/ir-news-8-10.csv', '../dataset/ir-news-10-12.csv']
 
-doc_paths = ['../dataset/ir-news-0-2.csv']
+# doc_paths = ['../dataset/ir-news-0-2.csv']
 
 all_docs = []
 
@@ -42,19 +42,29 @@ def build_inverted_index(documents, mode=1):
     return inverted_index
 
 
-iv = build_inverted_index(all_docs[:1000], 0)
-print('bef-here3')
+# iv = build_inverted_index(all_docs[:2000], 0)
+# print('bef-here3')
+# iv.store_index_to_file()
 
-# iv.store_index_to_file('../files/main_dictionary.csv')
+iv = InvertedIndex(0)
+iv.load_index_from_file(all_docs[:2000])
 
-print('bef-here2')
+
+
+# print('bef-here2')
+# exit(6)
+
+
 from indexing.ranked_indexing import RankedIndex
-
+#
 from math import log10 as log
-
-rx = RankedIndex(iv,log(10/4),1)
+#
+rx = RankedIndex(iv, log(10 / 4), 1)
 print('bef-here1.5')
-# rx.store_index_to_file()
+rx.store_index_to_file(exclude_inverted_index=True)
+print('Alhamdolellah!')
+exit(2)
+
 
 # rx2 = RankedIndex(None,log(10/4),1)
 #
@@ -69,26 +79,27 @@ print('bef-here1.5')
 # for d in iv.dictionary:
 #     print(d,iv.dictionary[d])
 
-print('bef-here1')
-a, b, c = rx.temp_doc_title_top_5_words(0)
-print(a, b, c)
-a, b, c = rx.temp_doc_title_top_5_words(5)
-print(a, b, c)
-a, b, c = rx.temp_doc_title_top_5_words(100)
-print(a, b, c)
-a, b, c = rx.temp_doc_title_top_5_words(200)
-print(a, b, c)
-a, b, c = rx.temp_doc_title_top_5_words(257)
-print(a, b, c)
-
+# print('bef-here1')
+# a, b, c = rx.temp_doc_title_top_5_words(0)
+# print(a, b, c)
+# a, b, c = rx.temp_doc_title_top_5_words(5)
+# print(a, b, c)
+# a, b, c = rx.temp_doc_title_top_5_words(100)
+# print(a, b, c)
+# a, b, c = rx.temp_doc_title_top_5_words(200)
+# print(a, b, c)
+# a, b, c = rx.temp_doc_title_top_5_words(257)
+# print(a, b, c)
 
 print('here')
 x = 'hh'
 while x != 'exit':
     x = input('>')
-    results = rx.search(x, 10)
-    for doc in results:
-        print('score:', doc[1], '\n\ntext:{', doc[0], '\n}')
+    result = iv.search(x)
+    print(result)
+    # results = rx.search(x, 10)
+    # for doc in results:
+    #     print('score:', doc[1], '\n\ntext:{', doc[0], '\n}')
 
 exit(5)
 
