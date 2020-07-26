@@ -90,7 +90,9 @@ class InvertedIndex:
         return self.token_per_doc_frequency_table.get(key, 0)
 
     def add_term(self, word, doc_id):
-        term = self.get_word(word)
+
+        term = self.postings_lists.get(self.dictionary.get(word))
+        #self.get_word(word)
         if term is None:
             word_id = len(self.dictionary)
             self.increase_token_per_doc_frequency(word_id, doc_id)
@@ -112,7 +114,7 @@ class InvertedIndex:
     def add_document(self, doc):
         doc_id = len(self.docs)
         self.docs.append(doc)
-        tokens = extract_words_from_document(doc, self.mode)
+        tokens = extract_words_from_document(doc,self.mode)
 
         self.number_of_tokens += len(tokens)  # For heaps measure
         for token in tokens:
@@ -148,5 +150,7 @@ class InvertedIndex:
     def load_index_from_file(self, docs):
         self.docs = docs
         self.dictionary = read_dictionary_from_file('../files/export/dictionary.csv',int)
+        print('Read dictionary')
         self.token_per_doc_frequency_table = read_dictionary_from_file('../files/export/term_doc_freq.csv',int)
+        print('tdf')
         add_all_posting_lists_from_file(self)
