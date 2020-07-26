@@ -56,6 +56,8 @@ def size_of_doc_vector(doc_vector):
 def calculate_cosine_similarity(doc_vector1, doc_vector2):
     size1 = size_of_doc_vector(doc_vector1)
     size2 = size_of_doc_vector(doc_vector2)
+    if size2 == 0 or size1 == 0:
+        return 0
     return np.dot(doc_vector1, doc_vector2) / (size1 * size2)
 
 
@@ -143,17 +145,19 @@ class RankedIndex:
         results = []
         docs_set = set()
 
-        high_idf_terms_indices = (self.idf_array > self.idf_threshold).nonzero()[0]
+        high_idf_terms_indices = ((self.idf_array > self.idf_threshold) * query_vector).nonzero()[0]
         for word_id in high_idf_terms_indices:
+            print('wid',word_id)
             for doc_id in self.inverted_index.postings_lists[word_id].postings:
-                if ((query_vector * self.docs_vectors[doc_id] > 0).nonzero()[
-                    0].size) / high_idf_terms_indices.size < self.common_word_threshold:
-                    continue
+                # if ((query_vector * self.docs_vectors[doc_id] > 0).nonzero()[
+                #     0].size)*1. / high_idf_terms_indices.size < self.common_word_threshold:
+                #     continue
                 docs_set.add(doc_id)
-
+        print(docs_set)
         for doc_id in docs_set:
             score = calculate_cosine_similarity(query_vector, self.docs_vectors[doc_id])
             results.append((doc_id, score))
+        print(results)
 
         # if len(results) < k:
         #     final_results = []
@@ -166,15 +170,20 @@ class RankedIndex:
             return result_tuple[1]
 
         build_max_heap(results, score_function)
+        print(results,'post heap')
 
         ranked_results = []
         for i in range(k):
-            ranked_results.append(pick_max(results, score_function, (-1, 0)))
-            print(i, '>', ranked_results[-1])
+            if len(results) > 0:
+                ranked_results.append(pick_max(results, score_function, (-1, 0)))
+                print(i, '>', ranked_results[-1])
         final_results = []
+        print(ranked_results)
+
         for res in ranked_results:
             if res[0] != -1:
                 final_results.append((self.inverted_index.docs[res[0]], res[1]))
+        print(final_results)
         return final_results
 
     def store_index_to_file(self, exclude_inverted_index=False):

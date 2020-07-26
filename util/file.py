@@ -16,7 +16,7 @@ def read_array_from_file(path, array_type=float):
     results = fetch_csv_from_file(path)
     array = np.zeros(shape=len(results), dtype=array_type)
     for i in range(len(results)):
-        array[i] = array_type(results[i])
+        array[i] = array_type(results[i][0])
     return array
 
 
