@@ -29,6 +29,8 @@ def write_compressed_docs_vectors_to_file(docs_vectors, compression_function, pa
                 csv_string += str(word_id) + ':' + str(compressed_vector[word_id]) + ','
             csv_string = csv_string[:-1]
         csv_string += '\n'
+        if doc_id % 500 == 0:
+            print('writing(', doc_id, '/', len(docs_vectors), ')')
     write_to_file(path, csv_string)
 
 

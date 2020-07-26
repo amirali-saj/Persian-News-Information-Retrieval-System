@@ -63,8 +63,9 @@ def calculate_cosine_similarity(doc_vector1, doc_vector2):
 
 # TODO: Index elimination (partially done)!
 class RankedIndex:
-    def __init__(self, inverted_index, idf_index_elimination_threshold, common_word_threshold):
+    def __init__(self, inverted_index, idf_index_elimination_threshold, common_word_threshold, low_memory=False):
         # Index elimination parameters.
+        self.vector_type = 'dict'
         self.idf_threshold = idf_index_elimination_threshold
         self.common_word_threshold = common_word_threshold
 
@@ -77,16 +78,26 @@ class RankedIndex:
             docs = self.inverted_index.docs
             idf_array = find_idf(self.inverted_index.postings_lists, len(docs))
             self.idf_array = idf_array
+
+            # if low_memory:
+            #     inverted_index.postings_lists = None
+            # for key in inverted_index.token_per_doc_frequency_table.keys():
+            #     inverted_index.token_per_doc_frequency_table.get(key)
+            # tf_matrix =
+
+            self.docs_vectors = []
             for doc_id in range(len(docs)):
-                doc_vector = np.zeros(shape=(len(self.inverted_index.dictionary)))
-                for word_id in range(len(idf_array)):
+                self.docs_vectors.append({})
+
+            for word_id in self.inverted_index.postings_lists:
+                for doc_id in self.inverted_index.postings_lists[word_id].postings:
                     tf = self.inverted_index.get_token_per_doc_frequency(word_id, doc_id)
                     if tf != 0:
-                        weight = (1 + log(tf)) * idf_array[word_id]
-                        doc_vector[word_id] = weight
-                if doc_id % 100 == 0:
-                    print(doc_id, '/', len(docs))
-                self.docs_vectors.append(doc_vector)
+                        self.docs_vectors[doc_id][word_id] = (1 + log(tf)) * idf_array[word_id]
+                print(word_id, '(', len(self.inverted_index.postings_lists[word_id].postings), ')', '/',
+                      len(self.inverted_index.postings_lists))
+            self.store_index_to_file(exclude_inverted_index=True, vector_type='dict')
+
         else:
             print('Postponed!')
         print('Done!')
@@ -147,7 +158,7 @@ class RankedIndex:
 
         high_idf_terms_indices = ((self.idf_array > self.idf_threshold) * query_vector).nonzero()[0]
         for word_id in high_idf_terms_indices:
-            print('wid',word_id)
+            print('wid', word_id)
             for doc_id in self.inverted_index.postings_lists[word_id].postings:
                 # if ((query_vector * self.docs_vectors[doc_id] > 0).nonzero()[
                 #     0].size)*1. / high_idf_terms_indices.size < self.common_word_threshold:
@@ -155,7 +166,7 @@ class RankedIndex:
                 docs_set.add(doc_id)
         print(docs_set)
         for doc_id in docs_set:
-            score = calculate_cosine_similarity(query_vector, self.docs_vectors[doc_id])
+            score = calculate_cosine_similarity(query_vector, doc_dict_to_array(self.docs_vectors[doc_id],len(self.inverted_index.dictionary)))
             results.append((doc_id, score))
         print(results)
 
@@ -170,7 +181,7 @@ class RankedIndex:
             return result_tuple[1]
 
         build_max_heap(results, score_function)
-        print(results,'post heap')
+        print(results, 'post heap')
 
         ranked_results = []
         for i in range(k):
@@ -186,14 +197,22 @@ class RankedIndex:
         print(final_results)
         return final_results
 
-    def store_index_to_file(self, exclude_inverted_index=False):
+    def store_index_to_file(self, exclude_inverted_index=False, vector_type='numpy'):
         if not exclude_inverted_index:
             self.inverted_index.store_index_to_file()
             print('inverted index saved')
         write_array_to_file('../files/export/idf.csv', self.idf_array)
         print('idf saved')
 
-        write_compressed_docs_vectors_to_file(self.docs_vectors, doc_array_to_dict, '../files/export/doc_vectors.csv')
+        def identity_function(x):
+            return x
+
+        if vector_type == 'dict':
+            compression_function = identity_function
+        else:
+            compression_function = doc_array_to_dict
+        write_compressed_docs_vectors_to_file(self.docs_vectors, compression_function,
+                                              '../files/export/doc_vectors.csv')
         print('doc vectors saved!')
 
     def load_index_from_file(self, exclude_inverted_index=False, docs=None, mode=0):
@@ -201,5 +220,9 @@ class RankedIndex:
             self.inverted_index = InvertedIndex(mode)
             self.inverted_index.load_index_from_file(docs)
         self.idf_array = read_array_from_file('../files/export/idf.csv', float)
-        self.docs_vectors = read_compressed_docs_vectors_fom_file('../files/export/doc_vectors.csv', doc_dict_to_array,
+
+        def identity_fucntion(x, y):
+            return x
+
+        self.docs_vectors = read_compressed_docs_vectors_fom_file('../files/export/doc_vectors.csv', identity_fucntion,
                                                                   len(self.inverted_index.dictionary))
