@@ -5,6 +5,47 @@ import os
 import numpy as np
 
 
+def write_array_to_file(path, array):
+    csv_string = ''
+    for element in array:
+        csv_string += str(element) + '\n'
+    write_to_file(path, csv_string)
+
+
+def read_array_from_file(path, array_type=float):
+    results = fetch_csv_from_file(path)
+    array = np.zeros(shape=len(results), dtype=array_type)
+    for i in range(len(results)):
+        array[i] = array_type(results[i])
+    return array
+
+
+def write_compressed_docs_vectors_to_file(docs_vectors, compression_function, path):
+    csv_string = ''
+    for doc_id in range(len(docs_vectors)):
+        compressed_vector = compression_function(docs_vectors[doc_id])
+        if len(compressed_vector.keys()) != 0:
+            for word_id in compressed_vector.keys():
+                csv_string += str(word_id) + ':' + str(compressed_vector[word_id]) + ','
+            csv_string = csv_string[:-1]
+        csv_string += '\n'
+    write_to_file(path, csv_string)
+
+
+def read_compressed_docs_vectors_fom_file(path, decompression_function, decompressed_sized):
+    docs_vectors = []
+    results = fetch_csv_from_file(path)
+    for i in range(len(results)):
+        res = results[i]
+        doc_vector = {}
+        for field in res:
+            tokens = field.split(':')
+            doc_vector[int(tokens[0])] = float(tokens[1])
+        decompressed_doc_vector = decompression_function(doc_vector, decompressed_sized)
+        docs_vectors.append(decompressed_doc_vector)
+    return docs_vectors
+
+
 def write_docs_vectors_to_file(docs_vectors, path):
     csv_string = ''
     for doc_id in range(len(docs_vectors)):

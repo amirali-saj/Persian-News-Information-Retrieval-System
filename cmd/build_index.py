@@ -46,8 +46,8 @@ def build_inverted_index(documents, mode=1):
 # print('bef-here3')
 # iv.store_index_to_file()
 
-iv = InvertedIndex(0)
-iv.load_index_from_file(all_docs[:2000])
+# iv = InvertedIndex(0)
+# iv.load_index_from_file(all_docs[:2000])
 
 
 
@@ -59,11 +59,13 @@ from indexing.ranked_indexing import RankedIndex
 #
 from math import log10 as log
 #
-rx = RankedIndex(iv, log(10 / 4), 1)
-print('bef-here1.5')
-rx.store_index_to_file(exclude_inverted_index=True)
-print('Alhamdolellah!')
-exit(2)
+rx = RankedIndex(None, log(10 / 4), 1)
+rx.load_index_from_file(False,all_docs[:2000],0)
+
+# print('bef-here1.5')
+# # rx.store_index_to_file(exclude_inverted_index=True)
+# print('Alhamdolellah!')
+# exit(2)
 
 
 # rx2 = RankedIndex(None,log(10/4),1)
@@ -95,7 +97,7 @@ print('here')
 x = 'hh'
 while x != 'exit':
     x = input('>')
-    result = iv.search(x)
+    result = rx.search(x)
     print(result)
     # results = rx.search(x, 10)
     # for doc in results:
