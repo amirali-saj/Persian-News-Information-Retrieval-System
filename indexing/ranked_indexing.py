@@ -1,4 +1,5 @@
 from math import log10 as log, sqrt
+import numpy as np
 
 from nlp.doc import extract_words_from_text
 from datastructures.heap import build_max_heap, pick_max
@@ -21,7 +22,7 @@ def convert_to_vector(text, idf_dict, dictionary, mode):
     for word in words:
         word_counts[word] = word_counts.get(word, 0) + 1
 
-    doc_vector = {}
+    doc_vector = np.zeros(shape=(len(dictionary)))
     for word in words:
         word_id = dictionary.get(word)
         if word_id is None:
@@ -33,20 +34,13 @@ def convert_to_vector(text, idf_dict, dictionary, mode):
 
 
 def size_of_doc_vector(doc_vector):
-    sum_of_square_weights = 0
-    for word_id in doc_vector.keys():
-        sum_of_square_weights += doc_vector[word_id] * doc_vector[word_id]
-    return sqrt(sum_of_square_weights)
+    return np.linalg.norm(doc_vector)
 
 
 def calculate_cosine_similarity(doc_vector1, doc_vector2):
     size1 = size_of_doc_vector(doc_vector1)
     size2 = size_of_doc_vector(doc_vector2)
-
-    dot_result = 0
-    for word_id in doc_vector1:
-        dot_result += doc_vector1[word_id] * doc_vector2.get(word_id, 0)
-    return dot_result / (size1 * size2)
+    return np.dot(doc_vector1,doc_vector2)/(size1*size2)
 
 
 # TODO: Index elimination (partially done)!
