@@ -40,7 +40,7 @@ def size_of_doc_vector(doc_vector):
 def calculate_cosine_similarity(doc_vector1, doc_vector2):
     size1 = size_of_doc_vector(doc_vector1)
     size2 = size_of_doc_vector(doc_vector2)
-    return np.dot(doc_vector1,doc_vector2)/(size1*size2)
+    return np.dot(doc_vector1, doc_vector2) / (size1 * size2)
 
 
 # TODO: Index elimination (partially done)!
@@ -60,13 +60,14 @@ class RankedIndex:
             idf_dict = find_idf(self.inverted_index.postings_lists, len(docs))
             self.idf_dict = idf_dict
             for doc_id in range(len(docs)):
-                doc_vector = {}  # [0 for i in range(len(idf_dict.keys()))]
+                doc_vector = np.zeros(shape=(len(self.inverted_index.dictionary)))
                 for word_id in idf_dict:
                     tf = self.inverted_index.get_token_per_doc_frequency(word_id, doc_id)
                     if tf != 0:
                         weight = (1 + log(tf)) * idf_dict[word_id]
                         doc_vector[word_id] = weight
-                print(doc_id,'/',len(docs))
+                if doc_id % 100 == 0:
+                    print(doc_id, '/', len(docs))
                 self.docs_vectors.append(doc_vector)
         else:
             print('Postponed!')

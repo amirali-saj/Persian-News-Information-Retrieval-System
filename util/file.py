@@ -2,15 +2,15 @@ import sys
 import csv
 import re
 import os
+import numpy as np
 
 
 def write_docs_vectors_to_file(docs_vectors, path):
     csv_string = ''
     for doc_id in range(len(docs_vectors)):
-        if len(docs_vectors[doc_id].keys()) != 0:
-            for word_id in docs_vectors[doc_id].keys():
-                csv_string += str(word_id) + ':' + str(docs_vectors[doc_id][word_id]) + ','
-            csv_string = csv_string[:-1]
+        for word_weight in docs_vectors[doc_id]:
+            csv_string += str(word_weight) + ','
+        csv_string = csv_string[:-1]
         csv_string += '\n'
     write_to_file(path, csv_string)
 
@@ -18,12 +18,10 @@ def write_docs_vectors_to_file(docs_vectors, path):
 def read_docs_vectors_fom_file(path):
     docs_vectors = []
     results = fetch_csv_from_file(path)
-    for i in range(len(results)):
-        res = results[i]
-        doc_vector = {}
-        for field in res:
-            tokens = field.split(':')
-            doc_vector[int(tokens[0])] = float(tokens[1])
+    for result in results:
+        doc_vector = np.zeros(shape=len(result))
+        for i in range(len(result)):
+            doc_vector[i] = float(result[i])
         docs_vectors.append(doc_vector)
     return docs_vectors
 
