@@ -38,14 +38,14 @@ def convert_to_vector(text, idf_dict, dictionary, mode):
     for word in words:
         word_counts[word] = word_counts.get(word, 0) + 1
 
-    doc_vector = np.zeros(shape=(len(dictionary)))
+    doc_vector = {}
     for word in words:
         word_id = dictionary.get(word)
         if word_id is None:
             continue
         tf = word_counts[word]
-        weight = (1 + log(tf)) * idf_dict[word_id]
-        doc_vector[word_id] = weight
+        if tf != 0:
+            doc_vector[word_id] = (1 + log(tf)) * idf_dict[word_id]
     return doc_vector
 
 
@@ -153,29 +153,23 @@ class RankedIndex:
     def search(self, query, k=10):
         query_vector = convert_to_vector(query, self.idf_array, self.inverted_index.dictionary,
                                          self.inverted_index.mode)
+        query_size = len(query_vector.keys())
+        if query_size == 0:
+            return []
+
         results = []
-        docs_set = set()
-
-        high_idf_terms_indices = ((self.idf_array > self.idf_threshold) * query_vector).nonzero()[0]
-        for word_id in high_idf_terms_indices:
-            print('wid', word_id)
+        doc_query_dot_products = {}
+        for word_id in query_vector:
+            if self.idf_array[word_id] < self.idf_threshold:
+                continue
             for doc_id in self.inverted_index.postings_lists[word_id].postings:
-                # if ((query_vector * self.docs_vectors[doc_id] > 0).nonzero()[
-                #     0].size)*1. / high_idf_terms_indices.size < self.common_word_threshold:
-                #     continue
-                docs_set.add(doc_id)
-        print(docs_set)
-        for doc_id in docs_set:
-            score = calculate_cosine_similarity(query_vector, doc_dict_to_array(self.docs_vectors[doc_id],len(self.inverted_index.dictionary)))
-            results.append((doc_id, score))
-        print(results)
+                doc_query_dot_products[doc_id] = doc_query_dot_products.get(doc_id, 0) + query_vector[word_id] * \
+                                                 self.docs_vectors[doc_id].get(word_id, 0)
 
-        # if len(results) < k:
-        #     final_results = []
-        #     for res in results:
-        #         if res[0] != -1:
-        #             final_results.append((self.inverted_index.docs[res[0]], res[1]))
-        #     return final_results
+        for doc_id in doc_query_dot_products:
+            doc_size = len(self.docs_vectors[doc_id].keys())
+            cosine_similarity = doc_query_dot_products[doc_id] / (doc_size * query_size)
+            results.append((doc_id, cosine_similarity))
 
         def score_function(result_tuple):
             return result_tuple[1]
