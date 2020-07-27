@@ -18,7 +18,7 @@ for doc_path in doc_paths:
             print(doc_path, i, '/', str((len(docs) - 1)))
         all_docs.append(doc)
 
-ranked_index = RankedIndex(None, log(10 / 4), 1, False)
+ranked_index = RankedIndex(None, log(10 / 4),0, False)
 
 ranked_index.load_index_from_file(False, all_docs, 0)
 ranked_index.load_champions_list()
@@ -29,6 +29,13 @@ while x != 'exit':
     if x == 'champions':
         use_champions = not use_champions
         print('Champions list activation: ', use_champions)
+        continue
+    elif x == 'thresh':
+        n = input('>')
+        try:
+            ranked_index.common_word_threshold = float(n)
+        except ValueError:
+            print('Not a number!')
         continue
     now = time()
     results = ranked_index.search(x, 10, use_champions)

@@ -180,6 +180,9 @@ class RankedIndex:
 
         results = []
         doc_query_dot_products = {}
+
+        doc_common_word_count = {}  # new
+
         for word_id in query_vector:
             if self.idf_array[word_id] < self.idf_threshold:
                 continue
@@ -188,8 +191,14 @@ class RankedIndex:
             else:
                 docs_list_for_word = self.inverted_index.postings_lists[word_id].postings
             for doc_id in docs_list_for_word:
+                doc_common_word_count[doc_id] = doc_common_word_count.get(doc_id, 0) + 1  # new
                 doc_query_dot_products[doc_id] = doc_query_dot_products.get(doc_id, 0) + query_vector[word_id] * \
                                                  self.docs_vectors[doc_id].get(word_id, 0)
+
+        if self.common_word_threshold != 0:
+            for doc_id in doc_common_word_count:  # new
+                if (doc_common_word_count[doc_id] * 1. / len(query_vector.keys())) < self.common_word_threshold:
+                    doc_query_dot_products.pop(doc_id)
 
         for doc_id in doc_query_dot_products:
             doc_size = size_of_doc_vector(self.docs_vectors[doc_id])
