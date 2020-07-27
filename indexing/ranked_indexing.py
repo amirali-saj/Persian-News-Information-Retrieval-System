@@ -61,7 +61,6 @@ def calculate_cosine_similarity(doc_vector1, doc_vector2):
     return np.dot(doc_vector1, doc_vector2) / (size1 * size2)
 
 
-# TODO: Index elimination (partially done)!
 class RankedIndex:
     def __init__(self, inverted_index, idf_index_elimination_threshold, common_word_threshold, low_memory=False):
         # Index elimination parameters.
@@ -78,12 +77,6 @@ class RankedIndex:
             docs = self.inverted_index.docs
             idf_array = find_idf(self.inverted_index.postings_lists, len(docs))
             self.idf_array = idf_array
-
-            # if low_memory:
-            #     inverted_index.postings_lists = None
-            # for key in inverted_index.token_per_doc_frequency_table.keys():
-            #     inverted_index.token_per_doc_frequency_table.get(key)
-            # tf_matrix =
 
             self.docs_vectors = []
             for doc_id in range(len(docs)):
@@ -117,7 +110,6 @@ class RankedIndex:
                 # Top five min  [ 10, 9, 5, 0, 0]
                 added = False
                 if score == 0:
-                    # top_5_min.append((word, 0))
                     added = True
                 if not added:
                     for i in range(len(top_5_min)):
@@ -175,20 +167,16 @@ class RankedIndex:
             return result_tuple[1]
 
         build_max_heap(results, score_function)
-        print(results, 'post heap')
 
         ranked_results = []
         for i in range(k):
             if len(results) > 0:
                 ranked_results.append(pick_max(results, score_function, (-1, 0)))
-                print(i, '>', ranked_results[-1])
         final_results = []
-        print(ranked_results)
 
         for res in ranked_results:
             if res[0] != -1:
                 final_results.append((self.inverted_index.docs[res[0]], res[1]))
-        print(final_results)
         return final_results
 
     def store_index_to_file(self, exclude_inverted_index=False, vector_type='numpy'):

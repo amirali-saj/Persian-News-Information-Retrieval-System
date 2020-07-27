@@ -2,7 +2,6 @@ from random import randint
 
 from indexing.inverted_index import InvertedIndex
 from util.file import fetch_docs_from_file
-from nlp.text import stems
 from indexing.ranked_indexing import RankedIndex
 from math import log10 as log
 
@@ -24,7 +23,7 @@ for doc_path in doc_paths:
 
 def pick_random_docs(dataset, number):  # Was used in phase 1
     result = []
-    for i in range(number):
+    for j in range(number):
         index = randint(0, len(dataset) - 1)
         result.append(dataset[index])
     return result
@@ -33,12 +32,12 @@ def pick_random_docs(dataset, number):  # Was used in phase 1
 # Builds an inverted index
 def build_inverted_index(documents, mode=1):
     inv_ind = InvertedIndex(mode=mode)
-    i = 0
+    j = 0
     for document in documents:
-        i += 1
+        j += 1
         inv_ind.add_document(document)
-        if i % 50 == 0:
-            print('indexing(', i, '/', str(len(documents)), ')')
+        if j % 50 == 0:
+            print('indexing(', j, '/', str(len(documents)), ')')
 
     return inv_ind
 

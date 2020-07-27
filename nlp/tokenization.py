@@ -84,7 +84,6 @@ for s in special_phrases:
 def complex_tokenize(text):
     initial_tokens = word_tokenize(text)
     result = []
-    # half_words = ['می']
     word = ''
     word_incomplete = False
     for token in initial_tokens:

@@ -139,13 +139,6 @@ def stem(word):
 
     word_tokens = []
 
-    # Uncomment this section to increase speed at cost of accuracy!
-
-    # temp_res = ''
-    # for t in result_tokens:
-    # temp_res += lemmatize(ps.run(t)) + ' '
-    # return temp_res[:-1]
-
     for t in result_tokens:
         word_tokens.append(lemmatize(ps.run(t)))
 

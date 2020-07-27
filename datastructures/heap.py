@@ -38,7 +38,7 @@ def max_heapify(a, i, heap_size, score_function=identity_function):
         a[i] = a[largest]
         a[largest] = temp
 
-        max_heapify(a, largest, heap_size,score_function)
+        max_heapify(a, largest, heap_size, score_function)
 
 
 def build_max_heap(a, score_function=identity_function):

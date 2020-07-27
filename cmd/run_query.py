@@ -2,11 +2,11 @@ from util.file import fetch_docs_from_file
 from indexing.ranked_indexing import RankedIndex
 from math import log10 as log
 
+# TODO: Add champions list!
+
 doc_paths = ['../dataset/ir-news-0-2.csv', '../dataset/ir-news-2-4.csv',
              '../dataset/ir-news-4-6.csv', '../dataset/ir-news-6-8.csv',
              '../dataset/ir-news-8-10.csv', '../dataset/ir-news-10-12.csv']
-
-# doc_paths = ['../dataset/ir-news-0-2.csv']
 
 all_docs = []
 
