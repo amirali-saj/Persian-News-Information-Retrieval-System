@@ -18,7 +18,7 @@ for doc_path in doc_paths:
             print(doc_path, i, '/', str((len(docs) - 1)))
         all_docs.append(doc)
 
-ranked_index = RankedIndex(None, log(10 / 4),0, False)
+ranked_index = RankedIndex(None, log(10 / 4), 0, False)
 
 ranked_index.load_index_from_file(False, all_docs, 0)
 ranked_index.load_champions_list()
