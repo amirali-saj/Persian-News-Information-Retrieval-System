@@ -5,9 +5,8 @@ from nlp.doc import extract_words_from_text
 from datastructures.heap import build_max_heap, pick_max
 
 from indexing.inverted_index import InvertedIndex
-from util.file import write_compressed_docs_vectors_to_file, read_compressed_docs_vectors_fom_file, \
-    write_dictionary_to_file, \
-    read_dictionary_from_file, write_array_to_file, read_array_from_file
+from util.file import write_compressed_docs_vectors_to_file, read_compressed_docs_vectors_fom_file \
+    , write_array_to_file, read_array_from_file, write_champions_list_to_file, read_champions_list_from_file
 
 
 def doc_array_to_dict(doc_array):
@@ -50,7 +49,11 @@ def convert_to_vector(text, idf_dict, dictionary, mode):
 
 
 def size_of_doc_vector(doc_vector):
-    return np.linalg.norm(doc_vector)
+    sum_of_squares = 0
+    for key in doc_vector:
+        sum_of_squares += doc_vector[key] * doc_vector[key]
+    return sqrt(sum_of_squares)
+    # np.linalg.norm(doc_vector)
 
 
 def calculate_cosine_similarity(doc_vector1, doc_vector2):
@@ -67,6 +70,7 @@ class RankedIndex:
         self.vector_type = 'dict'
         self.idf_threshold = idf_index_elimination_threshold
         self.common_word_threshold = common_word_threshold
+        self.champions_list = []
 
         # Represent docs as vectors!
         self.docs_vectors = []
@@ -94,6 +98,31 @@ class RankedIndex:
         else:
             print('Postponed!')
         print('Done!')
+
+    def build_champions_list(self, champions_list_size):
+        def scoring_function(x):
+            return x[1]
+
+        self.champions_list = [[] for i in range(len(self.inverted_index.postings_lists.keys()))]
+        for word_id in self.inverted_index.postings_lists.keys():
+            doc_tf_pair_list = []
+            for doc_id in self.inverted_index.postings_lists[word_id].postings:
+                doc_tf_pair_list.append((doc_id, self.inverted_index.get_token_per_doc_frequency(word_id, doc_id)))
+            build_max_heap(doc_tf_pair_list, scoring_function)
+            word_champions_list = []
+            for i in range(champions_list_size):
+                if len(doc_tf_pair_list) == 0:
+                    break
+                new_doc = pick_max(doc_tf_pair_list, scoring_function, (-1, 0))
+                word_champions_list.append(new_doc[0])
+            self.champions_list[word_id] = word_champions_list
+        print('Champions list created!')
+
+    def store_champions_list(self):
+        write_champions_list_to_file('../files/export/champions_list.csv', self.champions_list)
+
+    def load_champions_list(self):
+        self.champions_list = read_champions_list_from_file('../files/export/champions_list.csv')
 
     # Used for testing the tf-idf measure informally.
     def temp_doc_title_top_5_words(self, ind):
@@ -142,10 +171,10 @@ class RankedIndex:
 
             return doc[1], top_5_max, top_5_min
 
-    def search(self, query, k=10):
+    def search(self, query, k=10, use_champions_list=False):
         query_vector = convert_to_vector(query, self.idf_array, self.inverted_index.dictionary,
                                          self.inverted_index.mode)
-        query_size = len(query_vector.keys())
+        query_size = size_of_doc_vector(query_vector)
         if query_size == 0:
             return []
 
@@ -154,12 +183,16 @@ class RankedIndex:
         for word_id in query_vector:
             if self.idf_array[word_id] < self.idf_threshold:
                 continue
-            for doc_id in self.inverted_index.postings_lists[word_id].postings:
+            if use_champions_list:
+                docs_list_for_word = self.champions_list[word_id]
+            else:
+                docs_list_for_word = self.inverted_index.postings_lists[word_id].postings
+            for doc_id in docs_list_for_word:
                 doc_query_dot_products[doc_id] = doc_query_dot_products.get(doc_id, 0) + query_vector[word_id] * \
                                                  self.docs_vectors[doc_id].get(word_id, 0)
 
         for doc_id in doc_query_dot_products:
-            doc_size = len(self.docs_vectors[doc_id].keys())
+            doc_size = size_of_doc_vector(self.docs_vectors[doc_id])
             cosine_similarity = doc_query_dot_products[doc_id] / (doc_size * query_size)
             results.append((doc_id, cosine_similarity))
 

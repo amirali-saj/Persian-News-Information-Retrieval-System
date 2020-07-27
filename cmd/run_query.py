@@ -1,8 +1,9 @@
 from util.file import fetch_docs_from_file
 from indexing.ranked_indexing import RankedIndex
 from math import log10 as log
+from time import time
 
-# TODO: Add champions list!
+
 
 doc_paths = ['../dataset/ir-news-0-2.csv', '../dataset/ir-news-2-4.csv',
              '../dataset/ir-news-4-6.csv', '../dataset/ir-news-6-8.csv',
@@ -22,11 +23,18 @@ for doc_path in doc_paths:
 ranked_index = RankedIndex(None, log(10 / 4), 1, False)
 
 ranked_index.load_index_from_file(False, all_docs, 0)
-
-x = 'hh'
+ranked_index.load_champions_list()
+x = 'initial'
+use_champions = False
 while x != 'exit':
     x = input('>')
-    results = ranked_index.search(x, 10)
+    if x == 'champions':
+        use_champions = not use_champions
+        print('Champions list activation: ', use_champions)
+        continue
+    now = time()
+    results = ranked_index.search(x, 10, use_champions)
+    duration = time()-now
     i = 1
     for result in results:
         print(i, '.', result[0][1])
@@ -34,3 +42,4 @@ while x != 'exit':
         print('\n', result[0][6])
         print('==================================================================================================')
         i += 1
+    print(len(results),'Results found in',duration,'seconds.')

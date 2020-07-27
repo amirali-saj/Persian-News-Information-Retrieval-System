@@ -5,6 +5,29 @@ import os
 import numpy as np
 
 
+def write_champions_list_to_file(path, champions_list):
+    csv_string = ''
+    for word_id in range(len(champions_list)):
+        line = ''
+        for doc_id in champions_list[word_id]:
+            line += str(doc_id) + ','
+        if len(champions_list[word_id]) != 0:
+            line = line[:-1]
+        csv_string += line + '\n'
+    write_to_file(path, csv_string)
+
+
+def read_champions_list_from_file(path):
+    result = fetch_csv_from_file(path)
+    champions_list = []
+    for docs in result:
+        int_docs = []
+        for doc in docs:
+            int_docs.append(int(doc))
+        champions_list.append(int_docs)
+    return champions_list
+
+
 def write_array_to_file(path, array):
     csv_string = ''
     for element in array:

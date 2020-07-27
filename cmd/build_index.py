@@ -50,3 +50,7 @@ print('Inverted Index stored in file!')
 
 ranked_index = RankedIndex(inverted_index, log(10 / 4), 1, False)
 print('Ranked Index stored in file!')
+
+ranked_index.build_champions_list(10)
+ranked_index.store_champions_list()
+print('Champions list stored in file!')
