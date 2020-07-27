@@ -3,8 +3,6 @@ from indexing.ranked_indexing import RankedIndex
 from math import log10 as log
 from time import time
 
-
-
 doc_paths = ['../dataset/ir-news-0-2.csv', '../dataset/ir-news-2-4.csv',
              '../dataset/ir-news-4-6.csv', '../dataset/ir-news-6-8.csv',
              '../dataset/ir-news-8-10.csv', '../dataset/ir-news-10-12.csv']
@@ -34,7 +32,7 @@ while x != 'exit':
         continue
     now = time()
     results = ranked_index.search(x, 10, use_champions)
-    duration = time()-now
+    duration = time() - now
     i = 1
     for result in results:
         print(i, '.', result[0][1])
@@ -42,4 +40,4 @@ while x != 'exit':
         print('\n', result[0][6])
         print('==================================================================================================')
         i += 1
-    print(len(results),'Results found in',duration,'seconds.')
+    print(len(results), 'Results found in', duration, 'seconds.')
