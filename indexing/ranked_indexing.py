@@ -193,7 +193,7 @@ class RankedIndex:
             for doc_id in docs_list_for_word:
                 doc_common_word_count[doc_id] = doc_common_word_count.get(doc_id, 0) + 1  # new
                 doc_query_dot_products[doc_id] = doc_query_dot_products.get(doc_id, 0) + query_vector[word_id] * \
-                                                 self.docs_vectors[doc_id].get(word_id, 0)
+                                             self.docs_vectors[doc_id].get(word_id, 0)
 
         if self.common_word_threshold != 0:
             for doc_id in doc_common_word_count:  # new
